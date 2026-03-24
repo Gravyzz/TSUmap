@@ -11,3 +11,7 @@ struct AStarView: View {
         }
     }
 }
+
+#Preview {
+    AStarView()
+}
