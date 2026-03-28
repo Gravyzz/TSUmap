@@ -1,11 +1,11 @@
 import Foundation
 import SwiftUI
+import Combine
 
 struct Cell: Hashable, Equatable {
     let row: Int
     let col: Int
 }
-
 
 enum CellType {
     case walkable
@@ -15,7 +15,6 @@ enum CellType {
     case path
     case visited
 }
-
 
 class MapGrid: ObservableObject {
     let rows: Int
@@ -30,7 +29,6 @@ class MapGrid: ObservableObject {
         self.cols = cols
         self.grid = Array(repeating: Array(repeating: .walkable, count: cols), count: rows)
     }
-
 
     func tapCell(row: Int, col: Int) {
         let tapped = Cell(row: row, col: col)
@@ -50,12 +48,10 @@ class MapGrid: ObservableObject {
         }
     }
 
-
     func isWalkable(row: Int, col: Int) -> Bool {
         guard row >= 0, row < rows, col >= 0, col < cols else { return false }
         return grid[row][col] != .obstacle
     }
-
 
     func reset() {
         grid = Array(repeating: Array(repeating: .walkable, count: cols), count: rows)
@@ -63,9 +59,18 @@ class MapGrid: ObservableObject {
         endCell = nil
     }
 
-
     func clearPath() {
-        for r in 0..= 0, row < rows, col >= 0, col < cols else { return }
+        for r in 0..<rows {
+            for c in 0..<cols {
+                if grid[r][c] == .path || grid[r][c] == .visited {
+                    grid[r][c] = .walkable
+                }
+            }
+        }
+    }
+
+    func setCell(row: Int, col: Int, type: CellType) {
+        guard row >= 0, row < rows, col >= 0, col < cols else { return }
         grid[row][col] = type
     }
 }

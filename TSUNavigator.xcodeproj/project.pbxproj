@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		9ADD43982F72AA9800BB5E70 /* TSUNavigator.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TSUNavigator.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		9ADD43982F72AA9800BB5E70 /* TSUNavigator.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = TSUNavigator.app; path = "/Users/zaharartamoncev/Desktop/TSUmap/build/Debug-iphoneos/TSUNavigator.app"; sourceTree = "<absolute>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -33,16 +33,7 @@
 			isa = PBXGroup;
 			children = (
 				9ADD439A2F72AA9800BB5E70 /* TSUNavigator */,
-				9ADD43992F72AA9800BB5E70 /* Products */,
 			);
-			sourceTree = "<group>";
-		};
-		9ADD43992F72AA9800BB5E70 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				9ADD43982F72AA9800BB5E70 /* TSUNavigator.app */,
-			);
-			name = Products;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -95,7 +86,7 @@
 			mainGroup = 9ADD438F2F72AA9800BB5E70;
 			minimizedProjectReferenceProxies = 1;
 			preferredProjectObjectVersion = 77;
-			productRefGroup = 9ADD43992F72AA9800BB5E70 /* Products */;
+			productRefGroup = 9ADD438F2F72AA9800BB5E70;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
