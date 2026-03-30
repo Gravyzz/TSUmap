@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		9ADD43982F72AA9800BB5E70 /* TSUNavigator.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = TSUNavigator.app; path = "/Users/zaharartamoncev/Desktop/TSUmap/build/Debug-iphoneos/TSUNavigator.app"; sourceTree = "<absolute>"; };
+		9A7B9ACB2F77C0D000350B2E /* TSUNavigator.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TSUNavigator.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -33,6 +33,7 @@
 			isa = PBXGroup;
 			children = (
 				9ADD439A2F72AA9800BB5E70 /* TSUNavigator */,
+				9A7B9ACB2F77C0D000350B2E /* TSUNavigator.app */,
 			);
 			sourceTree = "<group>";
 		};
@@ -58,7 +59,7 @@
 			packageProductDependencies = (
 			);
 			productName = TSUNavigator;
-			productReference = 9ADD43982F72AA9800BB5E70 /* TSUNavigator.app */;
+			productReference = 9A7B9ACB2F77C0D000350B2E /* TSUNavigator.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
