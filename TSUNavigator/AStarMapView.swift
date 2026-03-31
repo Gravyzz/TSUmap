@@ -168,7 +168,14 @@ struct AStarMapView: UIViewRepresentable {
             guard let c = cell(at: pt) else { return }
             let type = model.grid[c.row][c.col]
             guard type != .building, type != .obstacle, type != .start, type != .end else { return }
-            model.grid[c.row][c.col] = (type == .barrier) ? .road : .barrier
+
+            if type == .barrier {
+                model.grid[c.row][c.col] = model.terrainCellType(c.row, c.col)
+                model.barrierCells.remove(c)
+            } else {
+                model.grid[c.row][c.col] = .barrier
+                model.barrierCells.insert(c)
+            }
             canvas?.setNeedsDisplay()
         }
     }
@@ -193,13 +200,27 @@ final class CanvasView: UIView {
                               cw: cw, ch: ch,
                               color: UIColor.systemRed.withAlphaComponent(0.35))
 
-        ctx.setFillColor(UIColor.systemBlue.withAlphaComponent(0.12).cgColor)
+        if !model.barrierCells.isEmpty {
+            ctx.setFillColor(UIColor.systemOrange.withAlphaComponent(0.75).cgColor)
+            for cell in model.barrierCells {
+                ctx.fill(CGRect(x: CGFloat(cell.col) * cw,
+                                y: CGFloat(cell.row) * ch,
+                                width: cw, height: ch))
+            }
+            ctx.setStrokeColor(UIColor(red: 0.8, green: 0.35, blue: 0, alpha: 1).cgColor)
+            ctx.setLineWidth(max(cw * 0.12, 0.5))
+            for cell in model.barrierCells {
+                ctx.stroke(CGRect(x: CGFloat(cell.col) * cw,
+                                  y: CGFloat(cell.row) * ch,
+                                  width: cw, height: ch))
+            }
+        }
+
+        ctx.setFillColor(UIColor.systemBlue.withAlphaComponent(0.25).cgColor)
         for cell in model.visitedCells {
-            let cx = (CGFloat(cell.col) + 0.5) * cw
-            let cy = (CGFloat(cell.row) + 0.5) * ch
-            let r  = min(cw, ch) * 0.4
-            ctx.fillEllipse(in: CGRect(x: cx - r, y: cy - r,
-                                       width: 2 * r, height: 2 * r))
+            ctx.fill(CGRect(x: CGFloat(cell.col) * cw,
+                            y: CGFloat(cell.row) * ch,
+                            width: cw, height: ch))
         }
 
         drawSmoothPath(ctx: ctx, path: model.pathCells, cw: cw, ch: ch)

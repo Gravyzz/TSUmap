@@ -39,6 +39,7 @@ class MapGridModel: ObservableObject {
 
     @Published var visitedCells: [Cell] = []
     @Published var pathCells:    [Cell] = []
+    @Published var barrierCells: Set<Cell> = []
 
     fileprivate init(from raw: GridDataJSON) {
         self.rows       = raw.rows
@@ -188,6 +189,7 @@ class MapGridModel: ObservableObject {
         selectedEndBuilding   = nil
         visitedCells = []
         pathCells    = []
+        if removeBarriers { barrierCells = [] }
     }
 
     func clearPath() {
