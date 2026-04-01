@@ -6,6 +6,7 @@ struct AStarMapView: UIViewRepresentable {
 
     @ObservedObject var model: MapGridModel
     var editMode: EditMode
+    var brushRadius: Int = 5
 
     private static let mapImageSize = CGSize(width: 838, height: 686)
 
@@ -67,10 +68,11 @@ struct AStarMapView: UIViewRepresentable {
 
 
     func updateUIView(_ scroll: UIScrollView, context: Context) {
-        context.coordinator.editMode = editMode
-        context.coordinator.model    = model
-        context.coordinator.cellW    = cellW
-        context.coordinator.cellH    = cellH
+        context.coordinator.editMode    = editMode
+        context.coordinator.model       = model
+        context.coordinator.cellW       = cellW
+        context.coordinator.cellH       = cellH
+        context.coordinator.brushRadius = brushRadius
         context.coordinator.canvas?.setNeedsDisplay()
     }
 
@@ -85,6 +87,9 @@ struct AStarMapView: UIViewRepresentable {
         var editMode: EditMode = .navigate
         var cellW:    CGFloat
         var cellH:    CGFloat
+        var brushRadius: Int = 5
+
+        private var brushAdding: Bool = true
 
         weak var canvas:    CanvasView?
         weak var container: UIView?
@@ -162,21 +167,45 @@ struct AStarMapView: UIViewRepresentable {
         }
 
         @objc func handleLongPress(_ gesture: UILongPressGestureRecognizer) {
-            guard gesture.state == .began || gesture.state == .changed else { return }
             guard editMode == .addBarrier else { return }
             let pt = gesture.location(in: canvas)
-            guard let c = cell(at: pt) else { return }
-            let type = model.grid[c.row][c.col]
-            guard type != .building, type != .obstacle, type != .start, type != .end else { return }
+            guard let center = cell(at: pt) else { return }
 
-            if type == .barrier {
-                model.grid[c.row][c.col] = model.terrainCellType(c.row, c.col)
-                model.barrierCells.remove(c)
-            } else {
-                model.grid[c.row][c.col] = .barrier
-                model.barrierCells.insert(c)
+            if gesture.state == .began {
+                brushAdding = model.grid[center.row][center.col] != .barrier
             }
+
+            guard gesture.state == .began || gesture.state == .changed else { return }
+
+            applyBrush(at: center, adding: brushAdding)
             canvas?.setNeedsDisplay()
+        }
+
+        private func applyBrush(at center: Cell, adding: Bool) {
+            let r = brushRadius
+            for dr in -r...r {
+                for dc in -r...r {
+                    guard dr * dr + dc * dc <= r * r else { continue }
+                    let nr = center.row + dr
+                    let nc = center.col + dc
+                    guard nr >= 0, nr < model.rows, nc >= 0, nc < model.cols else { continue }
+                    let type = model.grid[nr][nc]
+                    guard type != .building, type != .obstacle, type != .start, type != .end else { continue }
+
+                    let cell = Cell(row: nr, col: nc)
+                    if adding {
+                        if type != .barrier {
+                            model.grid[nr][nc] = .barrier
+                            model.barrierCells.insert(cell)
+                        }
+                    } else {
+                        if type == .barrier {
+                            model.grid[nr][nc] = model.terrainCellType(nr, nc)
+                            model.barrierCells.remove(cell)
+                        }
+                    }
+                }
+            }
         }
     }
 }

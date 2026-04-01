@@ -50,6 +50,7 @@ struct AStarView: View {
     @State private var visitedCount:      Int      = 0
     @State private var animationGen:      Int      = 0
     @State private var showResetSheet:    Bool     = false
+    @State private var brushRadius:       Double   = 5
 
     private let algo = AStarAlgorithm()
 
@@ -65,9 +66,15 @@ struct AStarView: View {
                     .padding(.horizontal, 12)
                     .padding(.bottom, 4)
 
-                AStarMapView(model: model, editMode: editMode)
+                AStarMapView(model: model, editMode: editMode, brushRadius: Int(brushRadius))
                     .ignoresSafeArea(edges: .horizontal)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+                if editMode == .addBarrier {
+                    brushSlider
+                        .padding(.horizontal, 12)
+                        .padding(.top, 6)
+                }
 
                 grassToggle
                     .padding(.horizontal, 12)
@@ -112,6 +119,20 @@ struct AStarView: View {
         }
     }
 
+    var brushSlider: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "paintbrush.pointed")
+                .foregroundColor(.orange)
+                .font(.caption)
+            Text("Кисть: \(Int(brushRadius))")
+                .font(.caption)
+                .foregroundColor(.orange)
+                .frame(width: 65, alignment: .leading)
+            Slider(value: $brushRadius, in: 1...20, step: 1)
+                .tint(.orange)
+        }
+    }
+
     var grassToggle: some View {
         HStack(spacing: 8) {
             Image(systemName: grassWalkable ? "leaf.fill" : "leaf")
@@ -130,8 +151,8 @@ struct AStarView: View {
     var hintBar: some View {
         HStack(spacing: 6) {
             if editMode == .addBarrier {
-                Image(systemName: "pencil").foregroundColor(.orange)
-                Text("Долгий тап — добавить/убрать барьер")
+                Image(systemName: "paintbrush.pointed").foregroundColor(.orange)
+                Text("Зажми и води пальцем — рисуй/стирай барьеры")
                     .font(.caption).foregroundColor(.orange)
             } else {
                 Image(systemName: "mappin").foregroundColor(.blue)
