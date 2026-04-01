@@ -223,6 +223,15 @@ final class CanvasView: UIView {
                             width: cw, height: ch))
         }
 
+        if !model.frontierCells.isEmpty {
+            ctx.setFillColor(UIColor.systemOrange.withAlphaComponent(0.45).cgColor)
+            for cell in model.frontierCells {
+                ctx.fill(CGRect(x: CGFloat(cell.col) * cw,
+                                y: CGFloat(cell.row) * ch,
+                                width: cw, height: ch))
+            }
+        }
+
         drawSmoothPath(ctx: ctx, path: model.pathCells, cw: cw, ch: ch)
 
         if let s = model.startCell {

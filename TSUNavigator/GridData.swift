@@ -37,9 +37,10 @@ class MapGridModel: ObservableObject {
     @Published var selectedStartBuilding: Set<Cell>? = nil
     @Published var selectedEndBuilding:   Set<Cell>? = nil
 
-    @Published var visitedCells: [Cell] = []
-    @Published var pathCells:    [Cell] = []
-    @Published var barrierCells: Set<Cell> = []
+    @Published var visitedCells:  [Cell] = []
+    @Published var frontierCells: Set<Cell> = []
+    @Published var pathCells:     [Cell] = []
+    @Published var barrierCells:  Set<Cell> = []
 
     fileprivate init(from raw: GridDataJSON) {
         self.rows       = raw.rows
@@ -187,8 +188,9 @@ class MapGridModel: ObservableObject {
         endCell   = nil
         selectedStartBuilding = nil
         selectedEndBuilding   = nil
-        visitedCells = []
-        pathCells    = []
+        visitedCells  = []
+        frontierCells = []
+        pathCells     = []
         if removeBarriers { barrierCells = [] }
     }
 
@@ -200,8 +202,9 @@ class MapGridModel: ObservableObject {
                 }
             }
         }
-        visitedCells = []
-        pathCells    = []
+        visitedCells  = []
+        frontierCells = []
+        pathCells     = []
     }
 
     func setCell(row: Int, col: Int, type: CellType) {

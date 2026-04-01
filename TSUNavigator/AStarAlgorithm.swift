@@ -1,5 +1,9 @@
 import Foundation
 
+enum AStarEvent: Sendable {
+    case visited(Cell)
+    case frontier(Cell)
+}
 
 final class AStarNode: Comparable, Hashable {
     let cell:   Cell
@@ -63,7 +67,7 @@ final class AStarAlgorithm {
         in snapshot:     GridSnapshot,
         from start:      Cell,
         to end:          Cell,
-        visitedCallback: ((Cell) -> Void)? = nil
+        eventCallback: ((AStarEvent) -> Void)? = nil
     ) -> [Cell]? {
 
         let total = snapshot.rows * snapshot.cols
@@ -125,7 +129,7 @@ final class AStarAlgorithm {
                 return reconstructPath(from: current)
             }
 
-            visitedCallback?(current.cell)
+            eventCallback?(.visited(current.cell))
 
             for dir in directions {
                 let nr = current.cell.row + dir.dr
@@ -157,6 +161,7 @@ final class AStarAlgorithm {
                     let node = AStarNode(cell: neighbor, parent: current, g: newG, h: newH)
                     parentMap[ni] = node
                     heapPush(node)
+                    eventCallback?(.frontier(neighbor))
                 }
             }
         }
