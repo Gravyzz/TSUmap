@@ -6,6 +6,7 @@ struct AStarMapView: UIViewRepresentable {
 
     @ObservedObject var model: MapGridModel
     var editMode: EditMode
+    var brushRadius: Int = 5
 
     private static let mapImageSize = CGSize(width: 838, height: 686)
 
@@ -67,10 +68,11 @@ struct AStarMapView: UIViewRepresentable {
 
 
     func updateUIView(_ scroll: UIScrollView, context: Context) {
-        context.coordinator.editMode = editMode
-        context.coordinator.model    = model
-        context.coordinator.cellW    = cellW
-        context.coordinator.cellH    = cellH
+        context.coordinator.editMode    = editMode
+        context.coordinator.model       = model
+        context.coordinator.cellW       = cellW
+        context.coordinator.cellH       = cellH
+        context.coordinator.brushRadius = brushRadius
         context.coordinator.canvas?.setNeedsDisplay()
     }
 
@@ -85,6 +87,9 @@ struct AStarMapView: UIViewRepresentable {
         var editMode: EditMode = .navigate
         var cellW:    CGFloat
         var cellH:    CGFloat
+        var brushRadius: Int = 5
+
+        private var brushAdding: Bool = true
 
         weak var canvas:    CanvasView?
         weak var container: UIView?
@@ -162,14 +167,45 @@ struct AStarMapView: UIViewRepresentable {
         }
 
         @objc func handleLongPress(_ gesture: UILongPressGestureRecognizer) {
-            guard gesture.state == .began || gesture.state == .changed else { return }
             guard editMode == .addBarrier else { return }
             let pt = gesture.location(in: canvas)
-            guard let c = cell(at: pt) else { return }
-            let type = model.grid[c.row][c.col]
-            guard type != .building, type != .obstacle, type != .start, type != .end else { return }
-            model.grid[c.row][c.col] = (type == .barrier) ? .road : .barrier
+            guard let center = cell(at: pt) else { return }
+
+            if gesture.state == .began {
+                brushAdding = model.grid[center.row][center.col] != .barrier
+            }
+
+            guard gesture.state == .began || gesture.state == .changed else { return }
+
+            applyBrush(at: center, adding: brushAdding)
             canvas?.setNeedsDisplay()
+        }
+
+        private func applyBrush(at center: Cell, adding: Bool) {
+            let r = brushRadius
+            for dr in -r...r {
+                for dc in -r...r {
+                    guard dr * dr + dc * dc <= r * r else { continue }
+                    let nr = center.row + dr
+                    let nc = center.col + dc
+                    guard nr >= 0, nr < model.rows, nc >= 0, nc < model.cols else { continue }
+                    let type = model.grid[nr][nc]
+                    guard type != .building, type != .obstacle, type != .start, type != .end else { continue }
+
+                    let cell = Cell(row: nr, col: nc)
+                    if adding {
+                        if type != .barrier {
+                            model.grid[nr][nc] = .barrier
+                            model.barrierCells.insert(cell)
+                        }
+                    } else {
+                        if type == .barrier {
+                            model.grid[nr][nc] = model.terrainCellType(nr, nc)
+                            model.barrierCells.remove(cell)
+                        }
+                    }
+                }
+            }
         }
     }
 }
@@ -193,13 +229,36 @@ final class CanvasView: UIView {
                               cw: cw, ch: ch,
                               color: UIColor.systemRed.withAlphaComponent(0.35))
 
-        ctx.setFillColor(UIColor.systemBlue.withAlphaComponent(0.12).cgColor)
+        if !model.barrierCells.isEmpty {
+            ctx.setFillColor(UIColor.systemOrange.withAlphaComponent(0.75).cgColor)
+            for cell in model.barrierCells {
+                ctx.fill(CGRect(x: CGFloat(cell.col) * cw,
+                                y: CGFloat(cell.row) * ch,
+                                width: cw, height: ch))
+            }
+            ctx.setStrokeColor(UIColor(red: 0.8, green: 0.35, blue: 0, alpha: 1).cgColor)
+            ctx.setLineWidth(max(cw * 0.12, 0.5))
+            for cell in model.barrierCells {
+                ctx.stroke(CGRect(x: CGFloat(cell.col) * cw,
+                                  y: CGFloat(cell.row) * ch,
+                                  width: cw, height: ch))
+            }
+        }
+
+        ctx.setFillColor(UIColor.systemBlue.withAlphaComponent(0.25).cgColor)
         for cell in model.visitedCells {
-            let cx = (CGFloat(cell.col) + 0.5) * cw
-            let cy = (CGFloat(cell.row) + 0.5) * ch
-            let r  = min(cw, ch) * 0.4
-            ctx.fillEllipse(in: CGRect(x: cx - r, y: cy - r,
-                                       width: 2 * r, height: 2 * r))
+            ctx.fill(CGRect(x: CGFloat(cell.col) * cw,
+                            y: CGFloat(cell.row) * ch,
+                            width: cw, height: ch))
+        }
+
+        if !model.frontierCells.isEmpty {
+            ctx.setFillColor(UIColor.systemOrange.withAlphaComponent(0.45).cgColor)
+            for cell in model.frontierCells {
+                ctx.fill(CGRect(x: CGFloat(cell.col) * cw,
+                                y: CGFloat(cell.row) * ch,
+                                width: cw, height: ch))
+            }
         }
 
         drawSmoothPath(ctx: ctx, path: model.pathCells, cw: cw, ch: ch)

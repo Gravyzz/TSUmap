@@ -2,12 +2,21 @@ import Foundation
 import SwiftUI
 import Combine
 
-struct Cell: Hashable, Equatable {
+struct Cell: Hashable, Equatable, Sendable {
     let row: Int
     let col: Int
+
+    nonisolated func hash(into hasher: inout Hasher) {
+        hasher.combine(row)
+        hasher.combine(col)
+    }
+
+    nonisolated static func == (lhs: Cell, rhs: Cell) -> Bool {
+        lhs.row == rhs.row && lhs.col == rhs.col
+    }
 }
 
-enum CellType {
+enum CellType: Sendable {
     case road      
     case grass
     case obstacle
