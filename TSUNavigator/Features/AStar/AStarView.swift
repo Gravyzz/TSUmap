@@ -315,7 +315,7 @@ struct AStarView: View {
             } ?? []
 
             var distMeters: Double = 0
-            for i in 1..<path.count {
+            for i in 1..<max(1, path.count) {
                 let dr = abs(path[i].row - path[i-1].row)
                 let dc = abs(path[i].col - path[i-1].col)
                 let step: Double = (dr != 0 && dc != 0) ? 1.41421 : 1.0
