@@ -30,7 +30,7 @@ struct ContentView: View {
                     Label("Прогулка", systemImage: "figure.walk")
                 }
 
-            DecisionTreeView()
+            DecisionTreeView(places: places)
                 .tabItem {
                     Label("Советник", systemImage: "lightbulb")
                 }
