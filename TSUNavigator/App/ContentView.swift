@@ -1,11 +1,18 @@
 import SwiftUI
 
 struct ContentView: View {
+    private let places = loadPlaces()
+
     var body: some View {
         TabView {
             AStarView()
                 .tabItem {
                     Label("Маршрут", systemImage: "map")
+                }
+
+            PlacesListView(places: places)
+                .tabItem {
+                    Label("Еда", systemImage: "takeoutbag.and.cup.and.straw")
                 }
 
             ClusteringView()
