@@ -23,7 +23,6 @@ private struct GridDataJSON: Codable {
 }
 
 class MapGridModel: ObservableObject {
-
     let rows:       Int
     let cols:       Int
     let cellMeters: Double
@@ -36,11 +35,21 @@ class MapGridModel: ObservableObject {
 
     @Published var selectedStartBuilding: Set<Cell>? = nil
     @Published var selectedEndBuilding:   Set<Cell>? = nil
+    @Published var focusedPlaceBuilding:  Set<Cell>? = nil
+    @Published var focusedPlace: FoodPlace? = nil
+    @Published var focusedPlaceTargetCell: Cell? = nil
+    @Published var routeToFocusedPlaceActive = false
+    @Published var selectedBuildingPlaces: [FoodPlace] = []
+    @Published var bindingPlace: FoodPlace? = nil
+    @Published var pendingBindingBuilding: Set<Cell>? = nil
+    @Published var pendingBindingCell: Cell? = nil
 
     @Published var visitedCells:  [Cell] = []
     @Published var frontierCells: Set<Cell> = []
     @Published var pathCells:     [Cell] = []
     @Published var barrierCells:  Set<Cell> = []
+
+    private var availablePlaces: [FoodPlace] = []
 
     fileprivate init(from raw: GridDataJSON) {
         self.rows       = raw.rows
@@ -81,6 +90,10 @@ class MapGridModel: ObservableObject {
             repeating: Array(repeating: .road, count: cols),
             count: rows
         )
+    }
+
+    func setAvailablePlaces(_ places: [FoodPlace]) {
+        availablePlaces = places
     }
 
 
@@ -142,6 +155,129 @@ class MapGridModel: ObservableObject {
         }
         return result
     }
+
+    func showPlace(_ place: FoodPlace) {
+        clearPath()
+        startCell = nil
+        endCell = nil
+        selectedStartBuilding = nil
+        selectedEndBuilding = nil
+        bindingPlace = nil
+        pendingBindingBuilding = nil
+        pendingBindingCell = nil
+        focusedPlace = place
+        selectedBuildingPlaces = []
+        routeToFocusedPlaceActive = false
+
+        guard let reference = place.campusBuildingCell else {
+            focusedPlaceBuilding = nil
+            focusedPlaceTargetCell = nil
+            return
+        }
+
+        let seedCell = Cell(row: reference.row, col: reference.col)
+        focusedPlaceBuilding = floodFillBuilding(from: seedCell)
+        focusedPlaceTargetCell = seedCell
+    }
+
+    func beginRouteToFocusedPlace() {
+        guard focusedPlace != nil,
+              let targetCell = focusedPlaceTargetCell else { return }
+
+        clearPath()
+        startCell = nil
+        selectedStartBuilding = nil
+        endCell = targetCell
+        selectedEndBuilding = focusedPlaceBuilding
+        routeToFocusedPlaceActive = true
+    }
+
+    func clearStartSelection() {
+        if let startCell, grid[startCell.row][startCell.col] == .start {
+            grid[startCell.row][startCell.col] = terrainCellType(startCell.row, startCell.col)
+        }
+        startCell = nil
+        selectedStartBuilding = nil
+        if focusedPlace == nil {
+            selectedBuildingPlaces = []
+        }
+    }
+
+    func clearEndSelection() {
+        if let endCell, grid[endCell.row][endCell.col] == .end {
+            grid[endCell.row][endCell.col] = terrainCellType(endCell.row, endCell.col)
+        }
+        endCell = nil
+        selectedEndBuilding = nil
+        if focusedPlace == nil {
+            selectedBuildingPlaces = []
+        }
+    }
+
+    func clearFocusedPlaceMode() {
+        clearPath()
+        clearStartSelection()
+        clearEndSelection()
+        focusedPlaceBuilding = nil
+        focusedPlace = nil
+        focusedPlaceTargetCell = nil
+        selectedBuildingPlaces = []
+        routeToFocusedPlaceActive = false
+    }
+
+    func beginBinding(for place: FoodPlace) {
+        clearPath()
+        startCell = nil
+        endCell = nil
+        selectedStartBuilding = nil
+        selectedEndBuilding = nil
+        focusedPlaceBuilding = nil
+        focusedPlace = nil
+        focusedPlaceTargetCell = nil
+        selectedBuildingPlaces = []
+        routeToFocusedPlaceActive = false
+        bindingPlace = place
+        if let reference = place.campusBuildingCell {
+            let cell = Cell(row: reference.row, col: reference.col)
+            pendingBindingBuilding = floodFillBuilding(from: cell)
+            pendingBindingCell = cell
+        } else {
+            pendingBindingBuilding = nil
+            pendingBindingCell = nil
+        }
+    }
+
+    func selectBindingBuilding(from cell: Cell) {
+        let buildingCells = floodFillBuilding(from: cell)
+        guard !buildingCells.isEmpty else { return }
+        pendingBindingBuilding = buildingCells
+        pendingBindingCell = cell
+    }
+
+    func cancelBinding() {
+        bindingPlace = nil
+        pendingBindingBuilding = nil
+        pendingBindingCell = nil
+    }
+
+    func completeBinding() {
+        bindingPlace = nil
+        pendingBindingBuilding = nil
+        pendingBindingCell = nil
+    }
+
+    func places(in buildingCells: Set<Cell>) -> [FoodPlace] {
+        availablePlaces
+            .filter { place in
+                guard let reference = place.campusBuildingCell else { return false }
+                return buildingCells.contains(Cell(row: reference.row, col: reference.col))
+            }
+            .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+    }
+
+    func updateSelectedBuildingPlaces(for buildingCells: Set<Cell>) {
+        selectedBuildingPlaces = places(in: buildingCells)
+    }
     
     func nearestWalkableEdge(of buildingCells: Set<Cell>,
                              to target: Cell,
@@ -188,6 +324,13 @@ class MapGridModel: ObservableObject {
         endCell   = nil
         selectedStartBuilding = nil
         selectedEndBuilding   = nil
+        focusedPlaceBuilding  = nil
+        focusedPlace          = nil
+        focusedPlaceTargetCell = nil
+        routeToFocusedPlaceActive = false
+        bindingPlace          = nil
+        pendingBindingBuilding = nil
+        pendingBindingCell     = nil
         visitedCells  = []
         frontierCells = []
         pathCells     = []

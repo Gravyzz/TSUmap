@@ -88,6 +88,7 @@ struct AStarMapView: UIViewRepresentable {
         var cellW:    CGFloat
         var cellH:    CGFloat
         var brushRadius: Int = 5
+        var zoomScale: CGFloat = 1
 
         private var brushAdding: Bool = true
 
@@ -103,6 +104,7 @@ struct AStarMapView: UIViewRepresentable {
         func viewForZooming(in scrollView: UIScrollView) -> UIView? { container }
 
         func scrollViewDidZoom(_ scrollView: UIScrollView) {
+            zoomScale = scrollView.zoomScale
             centerContent(in: scrollView)
         }
 
@@ -122,6 +124,7 @@ struct AStarMapView: UIViewRepresentable {
             let scaleY  = scroll.bounds.height / imgSize.height
             let scale   = min(scaleX, scaleY)
             scroll.setZoomScale(scale, animated: false)
+            zoomScale = scale
             centerContent(in: scroll)
         }
 
@@ -141,26 +144,64 @@ struct AStarMapView: UIViewRepresentable {
 
             let cellType = model.grid[c.row][c.col]
 
+            if model.bindingPlace != nil {
+                guard cellType == .building else { return }
+                if model.pendingBindingCell == c {
+                    model.pendingBindingBuilding = nil
+                    model.pendingBindingCell = nil
+                } else {
+                    model.selectBindingBuilding(from: c)
+                }
+                canvas?.setNeedsDisplay()
+                return
+            }
+
+            if model.focusedPlace != nil, !model.routeToFocusedPlaceActive {
+                if cellType == .building,
+                   let focusedBuilding = model.focusedPlaceBuilding,
+                   focusedBuilding.contains(c) {
+                    model.clearFocusedPlaceMode()
+                } else if cellType != .building {
+                    model.clearFocusedPlaceMode()
+                }
+                canvas?.setNeedsDisplay()
+                return
+            }
+
             if cellType == .building {
                 let buildingCells = model.floodFillBuilding(from: c)
                 guard !buildingCells.isEmpty else { return }
 
-                if model.startCell == nil {
+                if let selectedStartBuilding = model.selectedStartBuilding,
+                   selectedStartBuilding.contains(c) {
+                    model.clearStartSelection()
+                } else if let selectedEndBuilding = model.selectedEndBuilding,
+                          selectedEndBuilding.contains(c) {
+                    model.clearEndSelection()
+                } else if model.startCell == nil {
                     model.selectedStartBuilding = buildingCells
                     model.startCell = c
+                    model.updateSelectedBuildingPlaces(for: buildingCells)
                 } else if model.endCell == nil {
                     model.selectedEndBuilding = buildingCells
                     model.endCell = c
+                    model.updateSelectedBuildingPlaces(for: buildingCells)
                 }
             } else {
                 guard cellType != .obstacle, cellType != .barrier else { return }
 
-                if model.startCell == nil {
+                if model.startCell == c, model.selectedStartBuilding == nil {
+                    model.clearStartSelection()
+                } else if model.endCell == c, model.selectedEndBuilding == nil {
+                    model.clearEndSelection()
+                } else if model.startCell == nil {
                     model.startCell = c
                     model.grid[c.row][c.col] = .start
+                    model.selectedBuildingPlaces = []
                 } else if model.endCell == nil, c != model.startCell {
                     model.endCell = c
                     model.grid[c.row][c.col] = .end
+                    model.selectedBuildingPlaces = []
                 }
             }
             canvas?.setNeedsDisplay()
@@ -221,6 +262,8 @@ final class CanvasView: UIView {
         let model = coord.model
         let cw    = coord.cellW
         let ch    = coord.cellH
+        let screenWidth = coord.canvas?.window?.windowScene?.screen.bounds.width ?? 390
+        let markerRadius = selectionMarkerRadius(zoomScale: coord.zoomScale, screenWidth: screenWidth)
 
         drawBuildingHighlight(ctx: ctx, cells: model.selectedStartBuilding,
                               cw: cw, ch: ch,
@@ -228,6 +271,12 @@ final class CanvasView: UIView {
         drawBuildingHighlight(ctx: ctx, cells: model.selectedEndBuilding,
                               cw: cw, ch: ch,
                               color: UIColor.systemRed.withAlphaComponent(0.35))
+        drawBuildingHighlight(ctx: ctx, cells: model.focusedPlaceBuilding,
+                              cw: cw, ch: ch,
+                              color: UIColor.systemYellow.withAlphaComponent(0.4))
+        drawBuildingHighlight(ctx: ctx, cells: model.pendingBindingBuilding,
+                              cw: cw, ch: ch,
+                              color: UIColor.systemCyan.withAlphaComponent(0.45))
 
         if !model.barrierCells.isEmpty {
             ctx.setFillColor(UIColor.systemOrange.withAlphaComponent(0.75).cgColor)
@@ -264,13 +313,45 @@ final class CanvasView: UIView {
         drawSmoothPath(ctx: ctx, path: model.pathCells, cw: cw, ch: ch)
 
         if let s = model.startCell {
-            drawPin(ctx: ctx, row: s.row, col: s.col, cw: cw, ch: ch,
-                    color: .systemGreen, glyph: "A")
+            if model.selectedStartBuilding == nil {
+                drawCellHighlight(ctx: ctx, cell: s, cw: cw, ch: ch,
+                                  color: UIColor.systemGreen.withAlphaComponent(0.35))
+            }
+            drawSelectionMarker(ctx: ctx, row: s.row, col: s.col,
+                                cw: cw, ch: ch,
+                                radius: markerRadius,
+                                color: .systemGreen, glyph: "A")
         }
         if let e = model.endCell {
-            drawPin(ctx: ctx, row: e.row, col: e.col, cw: cw, ch: ch,
-                    color: .systemRed, glyph: "B")
+            if model.selectedEndBuilding == nil {
+                drawCellHighlight(ctx: ctx, cell: e, cw: cw, ch: ch,
+                                  color: UIColor.systemRed.withAlphaComponent(0.35))
+            }
+            drawSelectionMarker(ctx: ctx, row: e.row, col: e.col,
+                                cw: cw, ch: ch,
+                                radius: markerRadius,
+                                color: .systemRed, glyph: "B")
         }
+    }
+
+    private func selectionMarkerRadius(zoomScale: CGFloat, screenWidth: CGFloat) -> CGFloat {
+        let desiredScreenRadius = max(12, screenWidth * 0.032)
+        return desiredScreenRadius / max(zoomScale, 0.35)
+    }
+
+    private func drawCellHighlight(ctx: CGContext,
+                                   cell: Cell,
+                                   cw: CGFloat, ch: CGFloat,
+                                   color: UIColor) {
+        let rect = CGRect(x: CGFloat(cell.col) * cw,
+                          y: CGFloat(cell.row) * ch,
+                          width: cw,
+                          height: ch)
+        ctx.setFillColor(color.cgColor)
+        ctx.fill(rect)
+        ctx.setStrokeColor(color.withAlphaComponent(0.9).cgColor)
+        ctx.setLineWidth(max(cw * 0.12, 0.75))
+        ctx.stroke(rect.insetBy(dx: 0.4, dy: 0.4))
     }
 
     private func drawBuildingHighlight(ctx: CGContext,
@@ -381,50 +462,36 @@ final class CanvasView: UIView {
         return num / sqrt(lenSq)
     }
 
-    private func drawPin(ctx: CGContext,
+    private func drawSelectionMarker(ctx: CGContext,
                          row: Int, col: Int,
                          cw: CGFloat, ch: CGFloat,
+                         radius: CGFloat,
                          color: UIColor, glyph: String) {
         let cx = (CGFloat(col) + 0.5) * cw
         let cy = (CGFloat(row) + 0.5) * ch
-        let pinR = max(cw, ch) * 3.5
-        let pinPath = CGMutablePath()
-        let centerY = cy - pinR * 0.4
-        pinPath.addArc(center: CGPoint(x: cx, y: centerY),
-                       radius: pinR,
-                       startAngle: .pi * 0.18,
-                       endAngle: .pi * 0.82,
-                       clockwise: true)
-        pinPath.addLine(to: CGPoint(x: cx, y: cy + pinR * 0.7))
-        pinPath.closeSubpath()
 
         ctx.saveGState()
-        ctx.setShadow(offset: CGSize(width: 0, height: 2), blur: 4,
-                      color: UIColor.black.withAlphaComponent(0.45).cgColor)
+        ctx.setShadow(offset: CGSize(width: 0, height: radius * 0.16), blur: radius * 0.35,
+                      color: UIColor.black.withAlphaComponent(0.35).cgColor)
         ctx.setFillColor(color.cgColor)
-        ctx.addPath(pinPath)
-        ctx.fillPath()
+        ctx.fillEllipse(in: CGRect(x: cx - radius, y: cy - radius,
+                                   width: radius * 2, height: radius * 2))
         ctx.restoreGState()
 
         ctx.setStrokeColor(UIColor.white.cgColor)
-        ctx.setLineWidth(max(cw * 0.3, 1.0))
-        ctx.addPath(pinPath)
-        ctx.strokePath()
+        ctx.setLineWidth(max(radius * 0.2, 1.5))
+        ctx.strokeEllipse(in: CGRect(x: cx - radius, y: cy - radius,
+                                     width: radius * 2, height: radius * 2))
 
-        let innerR = pinR * 0.48
-        ctx.setFillColor(UIColor.white.cgColor)
-        ctx.fillEllipse(in: CGRect(x: cx - innerR, y: centerY - innerR,
-                                   width: 2 * innerR, height: 2 * innerR))
-
-        let font  = UIFont.systemFont(ofSize: innerR * 1.3, weight: .heavy)
+        let font  = UIFont.systemFont(ofSize: radius * 1.08, weight: .heavy)
         let attrs: [NSAttributedString.Key: Any] = [
             .font: font,
-            .foregroundColor: color
+            .foregroundColor: UIColor.white
         ]
         let str = glyph as NSString
         let sz  = str.size(withAttributes: attrs)
         str.draw(
-            at: CGPoint(x: cx - sz.width / 2, y: centerY - sz.height / 2),
+            at: CGPoint(x: cx - sz.width / 2, y: cy - sz.height / 2),
             withAttributes: attrs
         )
     }

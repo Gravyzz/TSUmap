@@ -3,6 +3,8 @@ import SwiftUI
 
 struct PlaceCardView: View {
     let place: FoodPlace
+    let onShowOnMap: () -> Void
+    let onBindBuilding: () -> Void
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -25,6 +27,31 @@ struct PlaceCardView: View {
                     Divider()
 
                     scheduleSection
+
+                    Button {
+                        dismiss()
+                        onShowOnMap()
+                    } label: {
+                        Label("Показать на карте", systemImage: "map")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .disabled(!place.isShownOnCampusMap)
+
+                    if !place.isShownOnCampusMap {
+                        Text("Это заведение не привязано к карте кампуса.")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+
+                    Button {
+                        dismiss()
+                        onBindBuilding()
+                    } label: {
+                        Label("Привязать здание", systemImage: "building.2")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.bordered)
 
                     Divider()
                     menuSection
@@ -241,6 +268,8 @@ struct PlaceCardView: View {
 
 struct PlacesListView: View {
     let places: [FoodPlace]
+    let onShowOnMap: (FoodPlace) -> Void
+    let onBindBuilding: (FoodPlace) -> Void
     @State private var selectedPlace: FoodPlace? = nil
     @State private var searchText = ""
     @State private var selectedCategory: PlaceCategory? = nil
@@ -289,7 +318,11 @@ struct PlacesListView: View {
             .navigationBarTitleDisplayMode(.inline)
             .searchable(text: $searchText, prompt: "Поиск по названию или блюду")
             .sheet(item: $selectedPlace) { place in
-                PlaceCardView(place: place)
+                PlaceCardView(place: place) {
+                    onShowOnMap(place)
+                } onBindBuilding: {
+                    onBindBuilding(place)
+                }
                     .presentationDetents([.medium, .large])
             }
         }

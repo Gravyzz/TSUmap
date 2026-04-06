@@ -38,7 +38,8 @@ extension LocationManager: @preconcurrency CLLocationManagerDelegate {
 
 struct AStarView: View {
 
-    @StateObject private var model: MapGridModel = loadGridModel(filename: "campus-grid")
+    @ObservedObject var model: MapGridModel
+    var onConfirmBinding: ((FoodPlace, CampusBuildingReference) -> Void)? = nil
     @StateObject private var locationManager = LocationManager()
 
     @State private var editMode:          EditMode = .navigate
@@ -49,18 +50,28 @@ struct AStarView: View {
     @State private var isRunning:         Bool     = false
     @State private var visitedCount:      Int      = 0
     @State private var animationGen:      Int      = 0
-    @State private var showResetSheet:    Bool     = false
     @State private var brushRadius:       Double   = 5
+    @State private var showBuildingPlacesList = false
+    @State private var presentedPlaceCard: FoodPlace? = nil
 
     private let algo = AStarAlgorithm()
 
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
-
                 hintBar
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)
+
+                if let place = model.focusedPlace {
+                    focusedPlaceCard(place)
+                        .padding(.horizontal, 12)
+                        .padding(.bottom, 6)
+                } else if !model.selectedBuildingPlaces.isEmpty {
+                    selectedBuildingPlacesCard
+                        .padding(.horizontal, 12)
+                        .padding(.bottom, 6)
+                }
 
                 statusBar
                     .padding(.horizontal, 12)
@@ -76,9 +87,11 @@ struct AStarView: View {
                         .padding(.top, 6)
                 }
 
-                grassToggle
-                    .padding(.horizontal, 12)
-                    .padding(.top, 6)
+                if model.bindingPlace == nil {
+                    grassToggle
+                        .padding(.horizontal, 12)
+                        .padding(.top, 6)
+                }
 
                 controlButtons
                     .padding(.horizontal, 12)
@@ -91,18 +104,20 @@ struct AStarView: View {
             .navigationTitle("A* — Маршрут")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { toolbarContent }
-            .confirmationDialog("Сброс", isPresented: $showResetSheet) {
-                Button("Удалить маршрут") {
-                    cancelAnimations()
-                    model.reset(removeBarriers: false)
-                    pathLength = 0; pathDistanceMeters = 0; noPath = false; visitedCount = 0
+            .sheet(item: $presentedPlaceCard) { place in
+                PlaceCardView(place: place) {
+                    model.showPlace(place)
+                } onBindBuilding: {
+                    model.beginBinding(for: place)
                 }
-                Button("Удалить всё", role: .destructive) {
-                    cancelAnimations()
-                    model.reset(removeBarriers: true)
-                    pathLength = 0; pathDistanceMeters = 0; noPath = false; visitedCount = 0
+                .presentationDetents([.medium, .large])
+            }
+            .onChange(of: model.selectedBuildingPlaces.map(\.id)) { _, newValue in
+                if newValue.isEmpty {
+                    showBuildingPlacesList = false
+                } else if newValue.count == 1 {
+                    showBuildingPlacesList = false
                 }
-                Button("Отмена", role: .cancel) {}
             }
         }
     }
@@ -116,6 +131,7 @@ struct AStarView: View {
             }
             .pickerStyle(.segmented)
             .frame(width: 80)
+            .disabled(model.bindingPlace != nil)
         }
     }
 
@@ -150,7 +166,19 @@ struct AStarView: View {
 
     var hintBar: some View {
         HStack(spacing: 6) {
-            if editMode == .addBarrier {
+            if let place = model.bindingPlace {
+                Image(systemName: "building.2.crop.circle")
+                    .foregroundColor(.cyan)
+                Text("Выберите на карте здание для «\(place.name)»")
+                    .font(.caption)
+                    .foregroundColor(.cyan)
+            } else if model.focusedPlace != nil, !model.routeToFocusedPlaceActive {
+                Image(systemName: "fork.knife.circle.fill")
+                    .foregroundColor(.blue)
+                Text("Тапните в пустое место, чтобы выйти из режима заведения")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            } else if editMode == .addBarrier {
                 Image(systemName: "paintbrush.pointed").foregroundColor(.orange)
                 Text("Зажми и води пальцем — рисуй/стирай барьеры")
                     .font(.caption).foregroundColor(.orange)
@@ -194,6 +222,148 @@ struct AStarView: View {
 
 
     var controlButtons: some View {
+        Group {
+            if let place = model.bindingPlace {
+                bindingControls(for: place)
+            } else if let place = model.focusedPlace, !model.routeToFocusedPlaceActive {
+                placeControls(for: place)
+            } else {
+                routeControls
+            }
+        }
+    }
+
+    func focusedPlaceCard(_ place: FoodPlace) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(place.name)
+                .font(.headline)
+            Text(place.address)
+                .font(.caption)
+                .foregroundColor(.secondary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(12)
+        .background(Color(.systemGray6))
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+    }
+
+    var selectedBuildingPlacesCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            buildingPlaceRow(model.selectedBuildingPlaces[0])
+
+            if model.selectedBuildingPlaces.count > 1 {
+                Button {
+                    showBuildingPlacesList.toggle()
+                } label: {
+                    HStack {
+                        Text(showBuildingPlacesList ? "Скрыть список заведений" : "Посмотреть еще \(model.selectedBuildingPlaces.count - 1)")
+                            .font(.subheadline.weight(.semibold))
+                        Spacer()
+                        Image(systemName: showBuildingPlacesList ? "chevron.up" : "chevron.down")
+                            .font(.caption.weight(.bold))
+                    }
+                }
+                .buttonStyle(.plain)
+
+                if showBuildingPlacesList {
+                    ScrollView {
+                        VStack(spacing: 8) {
+                            ForEach(Array(model.selectedBuildingPlaces.dropFirst())) { place in
+                                buildingPlaceRow(place)
+                            }
+                        }
+                    }
+                    .frame(maxHeight: 170)
+                }
+            }
+        }
+        .padding(12)
+        .background(Color(.systemGray6))
+        .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+    }
+
+    func buildingPlaceRow(_ place: FoodPlace) -> some View {
+        HStack(spacing: 10) {
+            Circle()
+                .fill(categoryColor(for: place).opacity(0.16))
+                .frame(width: 34, height: 34)
+                .overlay(
+                    Image(systemName: place.category.icon)
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundColor(categoryColor(for: place))
+                )
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(place.name)
+                    .font(.subheadline.weight(.semibold))
+                    .lineLimit(2)
+                Text(place.category.label)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+
+            Spacer()
+
+            Button {
+                showBuildingPlacesList = false
+                presentedPlaceCard = place
+            } label: {
+                Image(systemName: "ellipsis")
+                    .font(.headline)
+                    .foregroundColor(.primary)
+                    .frame(width: 34, height: 34)
+                    .background(Color.white.opacity(0.9))
+                    .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
+            }
+            .buttonStyle(.plain)
+        }
+    }
+
+    func bindingControls(for place: FoodPlace) -> some View {
+        VStack(spacing: 8) {
+            Text(place.address)
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            HStack(spacing: 12) {
+                Button {
+                    confirmBinding()
+                } label: {
+                    Label("Подтвердить здание", systemImage: "checkmark.circle.fill")
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 50)
+                }
+                .buttonStyle(MapActionButtonStyle())
+                .disabled(model.pendingBindingCell == nil)
+
+                Button {
+                    model.cancelBinding()
+                } label: {
+                    Label("Отмена", systemImage: "xmark")
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 50)
+                }
+                .buttonStyle(MapSecondaryButtonStyle())
+            }
+        }
+    }
+
+    func placeControls(for place: FoodPlace) -> some View {
+        VStack(spacing: 8) {
+            Button {
+                model.beginRouteToFocusedPlace()
+            } label: {
+                Label("Проложить маршрут", systemImage: "point.topleft.down.curvedto.point.bottomright.up")
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 50)
+            }
+            .buttonStyle(MapActionButtonStyle())
+            .disabled(place.campusBuildingCell == nil)
+        }
+    }
+
+    var routeControls: some View {
         VStack(spacing: 8) {
             HStack(spacing: 12) {
                 Button {
@@ -201,17 +371,19 @@ struct AStarView: View {
                 } label: {
                     Label("Найти путь", systemImage: "play.fill")
                         .frame(maxWidth: .infinity)
+                        .frame(height: 50)
                 }
-                .buttonStyle(.borderedProminent)
+                .buttonStyle(MapActionButtonStyle())
                 .disabled(model.startCell == nil || model.endCell == nil || isRunning)
 
                 Button {
-                    showResetSheet = true
+                    resetMapState()
                 } label: {
-                    Label("Сброс", systemImage: "arrow.counterclockwise")
-                        .frame(maxWidth: .infinity)
+                    Image(systemName: "trash")
+                        .font(.headline)
+                        .frame(width: 50, height: 50)
                 }
-                .buttonStyle(.bordered).tint(.red)
+                .buttonStyle(MapTrashButtonStyle())
                 .disabled(isRunning)
             }
 
@@ -230,8 +402,9 @@ struct AStarView: View {
                 } label: {
                     Label("Моя позиция — СТАРТ", systemImage: "location.fill")
                         .frame(maxWidth: .infinity)
+                        .frame(height: 50)
                 }
-                .buttonStyle(.bordered).tint(.blue)
+                .buttonStyle(MapSecondaryButtonStyle())
             }
         }
     }
@@ -268,6 +441,36 @@ struct AStarView: View {
     func cancelAnimations() {
         animationGen += 1
         isRunning = false
+    }
+
+    func confirmBinding() {
+        guard let place = model.bindingPlace,
+              let cell = model.pendingBindingCell else { return }
+        onConfirmBinding?(place, CampusBuildingReference(row: cell.row, col: cell.col))
+        model.completeBinding()
+    }
+
+    func resetMapState() {
+        cancelAnimations()
+        model.reset(removeBarriers: false)
+        pathLength = 0
+        pathDistanceMeters = 0
+        noPath = false
+        visitedCount = 0
+    }
+
+    func categoryColor(for place: FoodPlace) -> Color {
+        switch place.category {
+        case .vending:    return .purple
+        case .buffet:     return .orange
+        case .cafeteria:  return .blue
+        case .canteen:    return .green
+        case .coffeeshop: return .brown
+        case .cafe:       return .red
+        case .fastfood:   return .red
+        case .gastrohall: return .yellow
+        case .shop:       return .teal
+        }
     }
 
     func runAStar() {
@@ -392,4 +595,44 @@ struct AStarView: View {
     }
 }
 
-#Preview { AStarView() }
+private struct MapActionButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.headline)
+            .foregroundColor(.white)
+            .background(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(Color.accentColor.opacity(configuration.isPressed ? 0.82 : 1))
+            )
+    }
+}
+
+private struct MapSecondaryButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.headline)
+            .foregroundColor(.primary)
+            .background(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(Color(.systemGray6))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .stroke(Color(.systemGray4), lineWidth: configuration.isPressed ? 0.5 : 1)
+            )
+            .opacity(configuration.isPressed ? 0.85 : 1)
+    }
+}
+
+private struct MapTrashButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .foregroundColor(.white)
+            .background(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(Color.red.opacity(configuration.isPressed ? 0.82 : 1))
+            )
+    }
+}
+
+#Preview { AStarView(model: loadGridModel(filename: "campus-grid")) }

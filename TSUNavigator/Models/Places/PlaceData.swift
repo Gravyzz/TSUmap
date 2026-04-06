@@ -114,6 +114,11 @@ enum MenuItemCategory: String, Codable {
     }
 }
 
+struct CampusBuildingReference: Codable, Hashable {
+    let row: Int
+    let col: Int
+}
+
 
 struct MenuItem: Codable, Identifiable {
     var id: String { name }
@@ -150,6 +155,7 @@ struct FoodPlace: Codable, Identifiable {
     let id: String
     let name: String
     let category: PlaceCategory
+    let campusBuildingCell: CampusBuildingReference?
     let address: String
     let description: String
     let schedule: WorkSchedule
@@ -161,6 +167,10 @@ struct FoodPlace: Codable, Identifiable {
 
     var coordinate: CLLocationCoordinate2D {
         CLLocationCoordinate2D(latitude: latitude, longitude: longitude)
+    }
+
+    var isShownOnCampusMap: Bool {
+        campusBuildingCell != nil
     }
 
     var menuByCategory: [(category: MenuItemCategory, items: [MenuItem])] {
@@ -177,16 +187,57 @@ struct FoodPlace: Codable, Identifiable {
 }
 
 
+private let placesFileName = "campus-places.json"
+
+private func bundledPlacesURL() -> URL? {
+    Bundle.main.url(forResource: "campus-places", withExtension: "json")
+}
+
+private func writablePlacesURL() -> URL {
+    let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+    return documentsURL.appendingPathComponent(placesFileName)
+}
+
 func loadPlaces() -> [FoodPlace] {
-    guard let url = Bundle.main.url(forResource: "campus-places", withExtension: "json"),
+    let fileManager = FileManager.default
+    let writableURL = writablePlacesURL()
+
+    if fileManager.fileExists(atPath: writableURL.path),
+       let data = try? Data(contentsOf: writableURL),
+       let places = try? JSONDecoder().decode([FoodPlace].self, from: data) {
+        print("✅ Загружено \(places.count) заведений из Documents")
+        return places
+    }
+
+    guard let url = bundledPlacesURL(),
           let data = try? Data(contentsOf: url),
           let places = try? JSONDecoder().decode([FoodPlace].self, from: data)
     else {
         print("⚠️ campus-places.json не найден — используем встроенные данные")
         return []
     }
-    print("✅ Загружено \(places.count) заведений")
+    print("✅ Загружено \(places.count) заведений из Bundle")
     return places
+}
+
+@discardableResult
+func savePlaces(_ places: [FoodPlace]) -> Bool {
+    let encoder = JSONEncoder()
+    encoder.outputFormatting = [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]
+
+    guard let data = try? encoder.encode(places) else {
+        print("⚠️ Не удалось закодировать campus-places.json")
+        return false
+    }
+
+    do {
+        try data.write(to: writablePlacesURL(), options: .atomic)
+        print("✅ campus-places.json сохранен в Documents")
+        return true
+    } catch {
+        print("⚠️ Не удалось сохранить campus-places.json: \(error.localizedDescription)")
+        return false
+    }
 }
 
 
