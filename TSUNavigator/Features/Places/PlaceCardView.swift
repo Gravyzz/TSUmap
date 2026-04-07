@@ -4,7 +4,12 @@ struct PlaceCardView: View {
     let place: FoodPlace
     let onShowOnMap: () -> Void
     let onBindBuilding: () -> Void
+    let onRatePlace: () -> Void
+    let onResetRating: () -> Void
     @Environment(\.dismiss) private var dismiss
+    @State private var showResetAlert = false
+    @State private var resetPassword = ""
+    @State private var resetErrorMessage: String?
 
     var body: some View {
         NavigationView {
@@ -45,6 +50,15 @@ struct PlaceCardView: View {
 
                     Button {
                         dismiss()
+                        onRatePlace()
+                    } label: {
+                        Label("Поставить оценку", systemImage: "pencil.and.scribble")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.borderedProminent)
+
+                    Button {
+                        dismiss()
                         onBindBuilding()
                     } label: {
                         Label("Привязать здание", systemImage: "building.2")
@@ -54,11 +68,43 @@ struct PlaceCardView: View {
 
                     Divider()
                     menuSection
+
+                    Divider()
+
+                    Button(role: .destructive) {
+                        resetPassword = ""
+                        resetErrorMessage = nil
+                        showResetAlert = true
+                    } label: {
+                        Label("Сбросить оценку", systemImage: "trash")
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.bordered)
+
+                    if let resetErrorMessage {
+                        Text(resetErrorMessage)
+                            .font(.caption)
+                            .foregroundColor(.red)
+                    }
                 }
                 .padding()
             }
             .navigationTitle(place.name)
             .navigationBarTitleDisplayMode(.inline)
+            .alert("Сбросить оценку", isPresented: $showResetAlert) {
+                TextField("Пароль", text: $resetPassword)
+                Button("Отмена", role: .cancel) {}
+                Button("Сбросить", role: .destructive) {
+                    if resetPassword == "Денис Змеев" {
+                        dismiss()
+                        onResetRating()
+                    } else {
+                        resetErrorMessage = "Неверный пароль."
+                    }
+                }
+            } message: {
+                Text("Для сброса всех оценок введите пароль.")
+            }
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button { dismiss() } label: {
@@ -108,6 +154,9 @@ struct PlaceCardView: View {
                             .font(.subheadline)
                             .fontWeight(.bold)
                     }
+                    Text("\(place.ratingsCount) оценок")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
                 }
             }
         }
@@ -263,6 +312,8 @@ struct PlacesListView: View {
     let places: [FoodPlace]
     let onShowOnMap: (FoodPlace) -> Void
     let onBindBuilding: (FoodPlace) -> Void
+    let onRatePlace: (FoodPlace) -> Void
+    let onResetRating: (FoodPlace) -> Void
     @State private var selectedPlace: FoodPlace? = nil
     @State private var searchText = ""
     @State private var selectedCategory: PlaceCategory? = nil
@@ -315,6 +366,10 @@ struct PlacesListView: View {
                     onShowOnMap(place)
                 } onBindBuilding: {
                     onBindBuilding(place)
+                } onRatePlace: {
+                    onRatePlace(place)
+                } onResetRating: {
+                    onResetRating(place)
                 }
                     .presentationDetents([.medium, .large])
             }

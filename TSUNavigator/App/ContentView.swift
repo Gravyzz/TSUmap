@@ -4,6 +4,7 @@ struct ContentView: View {
     @State private var places = loadPlaces()
     @StateObject private var mapModel = loadGridModel(filename: "campus-grid")
     @State private var selectedTab: Tab = .map
+    @State private var selectedRatingPlaceID: String?
 
     private enum Tab {
         case map
@@ -12,13 +13,17 @@ struct ContentView: View {
         case lunch
         case walk
         case advisor
-        case rating
+        case neuralNet
     }
 
     var body: some View {
         TabView(selection: $selectedTab) {
             AStarView(model: mapModel) { place, buildingReference in
                 updateBuildingBinding(for: place, buildingReference: buildingReference)
+            } onRatePlace: { place in
+                openRating(for: place)
+            } onResetRating: { place in
+                resetRating(for: place)
             }
                 .tag(Tab.map)
                 .tabItem {
@@ -31,6 +36,10 @@ struct ContentView: View {
             } onBindBuilding: { place in
                 mapModel.beginBinding(for: place)
                 selectedTab = .map
+            } onRatePlace: { place in
+                openRating(for: place)
+            } onResetRating: { place in
+                resetRating(for: place)
             }
             .tag(Tab.food)
                 .tabItem {
@@ -61,10 +70,15 @@ struct ContentView: View {
                     Label("Советник", systemImage: "lightbulb")
                 }
 
-            NeuralNetView()
-                .tag(Tab.rating)
+            NeuralNetView(
+                places: places,
+                selectedPlaceID: $selectedRatingPlaceID
+            ) { placeID, value in
+                submitRating(value, forPlaceID: placeID)
+            }
+                .tag(Tab.neuralNet)
                 .tabItem {
-                    Label("Оценка", systemImage: "hand.draw")
+                    Label("Нейросеть", systemImage: "hand.draw")
                 }
         }
         .onAppear {
@@ -85,7 +99,7 @@ struct ContentView: View {
                 description: currentPlace.description,
                 schedule: currentPlace.schedule,
                 priceLevel: currentPlace.priceLevel,
-                rating: currentPlace.rating,
+                ratings: currentPlace.ratings,
                 menu: currentPlace.menu,
                 latitude: currentPlace.latitude,
                 longitude: currentPlace.longitude
@@ -96,6 +110,62 @@ struct ContentView: View {
         _ = savePlaces(places)
         mapModel.setAvailablePlaces(places)
         mapModel.showPlace(updatedPlace)
+    }
+
+    private func openRating(for place: FoodPlace) {
+        selectedRatingPlaceID = place.id
+        selectedTab = .neuralNet
+    }
+
+    private func submitRating(_ value: Int, forPlaceID placeID: String) {
+        places = places.map { place in
+            guard place.id == placeID else { return place }
+            return FoodPlace(
+                id: place.id,
+                name: place.name,
+                category: place.category,
+                campusBuildingCell: place.campusBuildingCell,
+                address: place.address,
+                description: place.description,
+                schedule: place.schedule,
+                priceLevel: place.priceLevel,
+                ratings: place.ratings + [Double(value)],
+                menu: place.menu,
+                latitude: place.latitude,
+                longitude: place.longitude
+            )
+        }
+        persistPlaces()
+    }
+
+    private func resetRating(for place: FoodPlace) {
+        places = places.map { currentPlace in
+            guard currentPlace.id == place.id else { return currentPlace }
+            return FoodPlace(
+                id: currentPlace.id,
+                name: currentPlace.name,
+                category: currentPlace.category,
+                campusBuildingCell: currentPlace.campusBuildingCell,
+                address: currentPlace.address,
+                description: currentPlace.description,
+                schedule: currentPlace.schedule,
+                priceLevel: currentPlace.priceLevel,
+                ratings: [],
+                menu: currentPlace.menu,
+                latitude: currentPlace.latitude,
+                longitude: currentPlace.longitude
+            )
+        }
+        persistPlaces()
+    }
+
+    private func persistPlaces() {
+        _ = savePlaces(places)
+        mapModel.setAvailablePlaces(places)
+        if let selectedRatingPlaceID,
+           !places.contains(where: { $0.id == selectedRatingPlaceID }) {
+            self.selectedRatingPlaceID = nil
+        }
     }
 }
 

@@ -149,6 +149,22 @@ struct WorkSchedule: Codable {
 }
 
 struct FoodPlace: Codable, Identifiable {
+    private enum CodingKeys: String, CodingKey {
+        case id
+        case name
+        case category
+        case campusBuildingCell
+        case address
+        case description
+        case schedule
+        case priceLevel
+        case rating
+        case ratings
+        case menu
+        case latitude
+        case longitude
+    }
+
     let id: String
     let name: String
     let category: PlaceCategory
@@ -157,10 +173,87 @@ struct FoodPlace: Codable, Identifiable {
     let description: String
     let schedule: WorkSchedule
     let priceLevel: PriceLevel
-    let rating: Double?
+    let ratings: [Double]
     let menu: [MenuItem]
     let latitude: Double
     let longitude: Double
+
+    init(
+        id: String,
+        name: String,
+        category: PlaceCategory,
+        campusBuildingCell: CampusBuildingReference?,
+        address: String,
+        description: String,
+        schedule: WorkSchedule,
+        priceLevel: PriceLevel,
+        ratings: [Double] = [],
+        menu: [MenuItem],
+        latitude: Double,
+        longitude: Double
+    ) {
+        self.id = id
+        self.name = name
+        self.category = category
+        self.campusBuildingCell = campusBuildingCell
+        self.address = address
+        self.description = description
+        self.schedule = schedule
+        self.priceLevel = priceLevel
+        self.ratings = ratings
+        self.menu = menu
+        self.latitude = latitude
+        self.longitude = longitude
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        name = try container.decode(String.self, forKey: .name)
+        category = try container.decode(PlaceCategory.self, forKey: .category)
+        campusBuildingCell = try container.decodeIfPresent(CampusBuildingReference.self, forKey: .campusBuildingCell)
+        address = try container.decode(String.self, forKey: .address)
+        description = try container.decode(String.self, forKey: .description)
+        schedule = try container.decode(WorkSchedule.self, forKey: .schedule)
+        priceLevel = try container.decode(PriceLevel.self, forKey: .priceLevel)
+        menu = try container.decode([MenuItem].self, forKey: .menu)
+        latitude = try container.decode(Double.self, forKey: .latitude)
+        longitude = try container.decode(Double.self, forKey: .longitude)
+
+        if let ratings = try container.decodeIfPresent([Double].self, forKey: .ratings) {
+            self.ratings = ratings
+        } else if let legacyRating = try container.decodeIfPresent(Double.self, forKey: .rating) {
+            self.ratings = [legacyRating]
+        } else {
+            self.ratings = []
+        }
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        try container.encode(name, forKey: .name)
+        try container.encode(category, forKey: .category)
+        try container.encodeIfPresent(campusBuildingCell, forKey: .campusBuildingCell)
+        try container.encode(address, forKey: .address)
+        try container.encode(description, forKey: .description)
+        try container.encode(schedule, forKey: .schedule)
+        try container.encode(priceLevel, forKey: .priceLevel)
+        try container.encodeIfPresent(rating, forKey: .rating)
+        try container.encode(ratings, forKey: .ratings)
+        try container.encode(menu, forKey: .menu)
+        try container.encode(latitude, forKey: .latitude)
+        try container.encode(longitude, forKey: .longitude)
+    }
+
+    var rating: Double? {
+        guard !ratings.isEmpty else { return nil }
+        return ratings.reduce(0, +) / Double(ratings.count)
+    }
+
+    var ratingsCount: Int {
+        ratings.count
+    }
 
     var coordinate: CLLocationCoordinate2D {
         CLLocationCoordinate2D(latitude: latitude, longitude: longitude)

@@ -39,6 +39,8 @@ struct AStarView: View {
 
     @ObservedObject var model: MapGridModel
     var onConfirmBinding: ((FoodPlace, CampusBuildingReference) -> Void)? = nil
+    var onRatePlace: ((FoodPlace) -> Void)? = nil
+    var onResetRating: ((FoodPlace) -> Void)? = nil
     @StateObject private var locationManager = LocationManager()
 
     @State private var editMode:          EditMode = .navigate
@@ -108,6 +110,10 @@ struct AStarView: View {
                     model.showPlace(place)
                 } onBindBuilding: {
                     model.beginBinding(for: place)
+                } onRatePlace: {
+                    onRatePlace?(place)
+                } onResetRating: {
+                    onResetRating?(place)
                 }
                 .presentationDetents([.medium, .large])
             }
