@@ -1,6 +1,5 @@
 import SwiftUI
 
-
 struct PlaceCardView: View {
     let place: FoodPlace
     let onShowOnMap: () -> Void
@@ -71,7 +70,6 @@ struct PlaceCardView: View {
         }
     }
 
-
     private var headerSection: some View {
         HStack(spacing: 12) {
             ZStack {
@@ -114,7 +112,6 @@ struct PlaceCardView: View {
             }
         }
     }
-
 
     private var infoChips: some View {
         HStack(spacing: 8) {
@@ -164,8 +161,6 @@ struct PlaceCardView: View {
         }
     }
 
-
-
     private var menuSection: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Меню")
@@ -205,7 +200,6 @@ struct PlaceCardView: View {
             }
         }
     }
-
 
     private var categoryColor: Color {
         switch place.category {
@@ -264,7 +258,6 @@ struct PlaceCardView: View {
         return hour >= openH && hour < closeH
     }
 }
-
 
 struct PlacesListView: View {
     let places: [FoodPlace]

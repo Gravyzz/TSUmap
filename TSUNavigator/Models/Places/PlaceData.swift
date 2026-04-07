@@ -1,8 +1,6 @@
 import Foundation
 import CoreLocation
 
-
-
 enum PlaceCategory: String, Codable, CaseIterable {
     case vending    = "vending"
     case buffet     = "buffet"
@@ -119,7 +117,6 @@ struct CampusBuildingReference: Codable, Hashable {
     let col: Int
 }
 
-
 struct MenuItem: Codable, Identifiable {
     var id: String { name }
     let name: String
@@ -186,7 +183,6 @@ struct FoodPlace: Codable, Identifiable {
     }
 }
 
-
 private let placesFileName = "campus-places.json"
 
 private func bundledPlacesURL() -> URL? {
@@ -202,22 +198,44 @@ func loadPlaces() -> [FoodPlace] {
     let fileManager = FileManager.default
     let writableURL = writablePlacesURL()
 
-    if fileManager.fileExists(atPath: writableURL.path),
-       let data = try? Data(contentsOf: writableURL),
-       let places = try? JSONDecoder().decode([FoodPlace].self, from: data) {
-        print("✅ Загружено \(places.count) заведений из Documents")
+    let documentsPlaces: [FoodPlace]? = {
+        guard fileManager.fileExists(atPath: writableURL.path),
+              let data = try? Data(contentsOf: writableURL),
+              let places = try? JSONDecoder().decode([FoodPlace].self, from: data)
+        else { return nil }
         return places
+    }()
+
+    let bundlePlaces: [FoodPlace]? = {
+        guard let url = bundledPlacesURL(),
+              let data = try? Data(contentsOf: url),
+              let places = try? JSONDecoder().decode([FoodPlace].self, from: data)
+        else { return nil }
+        return places
+    }()
+
+    let docBindings = documentsPlaces?.filter { $0.campusBuildingCell != nil }.count ?? 0
+    let bundleBindings = bundlePlaces?.filter { $0.campusBuildingCell != nil }.count ?? 0
+
+    if let bundle = bundlePlaces, bundleBindings > docBindings {
+
+        _ = savePlaces(bundle)
+        print("✅ Обновлено из Bundle: \(bundle.count) заведений (\(bundleBindings) привязок)")
+        return bundle
     }
 
-    guard let url = bundledPlacesURL(),
-          let data = try? Data(contentsOf: url),
-          let places = try? JSONDecoder().decode([FoodPlace].self, from: data)
-    else {
-        print("⚠️ campus-places.json не найден — используем встроенные данные")
-        return []
+    if let docs = documentsPlaces {
+        print("✅ Загружено \(docs.count) заведений из Documents (\(docBindings) привязок)")
+        return docs
     }
-    print("✅ Загружено \(places.count) заведений из Bundle")
-    return places
+
+    if let bundle = bundlePlaces {
+        print("✅ Загружено \(bundle.count) заведений из Bundle (\(bundleBindings) привязок)")
+        return bundle
+    }
+
+    print("⚠️ campus-places.json не найден — используем встроенные данные")
+    return []
 }
 
 @discardableResult
@@ -239,7 +257,6 @@ func savePlaces(_ places: [FoodPlace]) -> Bool {
         return false
     }
 }
-
 
 extension Array where Element == FoodPlace {
 

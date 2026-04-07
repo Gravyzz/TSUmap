@@ -1,394 +1,1218 @@
 [
   {
-    "id": "vending_main",
-    "name": "Автомат (Главный корпус)",
-    "category": "vending",
-    "campusBuildingID": "tsu_main",
-    "address": "пр. Ленина, 36",
-    "description": "Вендинговый автомат с горячими напитками, снеками и сэндвичами.",
-    "schedule": { "note": "Круглосуточно" },
-    "priceLevel": "low",
-    "rating": null,
-    "latitude": 56.47130,
-    "longitude": 84.95050,
-    "menu": [
-      { "name": "Эспрессо",          "category": "coffee",   "priceMin": 60,  "priceMax": 80 },
-      { "name": "Капучино",          "category": "coffee",   "priceMin": 80,  "priceMax": 120 },
-      { "name": "Латте",             "category": "coffee",   "priceMin": 80,  "priceMax": 120 },
-      { "name": "Горячий шоколад",   "category": "drink",    "priceMin": 80,  "priceMax": 100 },
-      { "name": "Чай",               "category": "tea",      "priceMin": 60,  "priceMax": 80 },
-      { "name": "Вода",              "category": "drink",    "priceMin": 60,  "priceMax": 80 },
-      { "name": "Соки",              "category": "drink",    "priceMin": 80,  "priceMax": 120 },
-      { "name": "Snickers / KitKat", "category": "snack",    "priceMin": 80,  "priceMax": 120 },
-      { "name": "Чипсы",             "category": "snack",    "priceMin": 80,  "priceMax": 100 },
-      { "name": "Орехи",             "category": "snack",    "priceMin": 100, "priceMax": 150 },
-      { "name": "Печенье",           "category": "snack",    "priceMin": 60,  "priceMax": 100 },
-      { "name": "Сэндвич в упаковке","category": "sandwich", "priceMin": 120, "priceMax": 200 }
-    ]
+    "address" : "пр. Ленина, 36",
+    "campusBuildingCell" : {
+      "col" : 308,
+      "row" : 174
+    },
+    "category" : "vending",
+    "description" : "Вендинговый автомат с горячими напитками, снеками и сэндвичами.",
+    "id" : "vending_main",
+    "latitude" : 56.4713,
+    "longitude" : 84.9505,
+    "menu" : [
+      {
+        "category" : "coffee",
+        "name" : "Эспрессо",
+        "priceMax" : 80,
+        "priceMin" : 60
+      },
+      {
+        "category" : "coffee",
+        "name" : "Капучино",
+        "priceMax" : 120,
+        "priceMin" : 80
+      },
+      {
+        "category" : "coffee",
+        "name" : "Латте",
+        "priceMax" : 120,
+        "priceMin" : 80
+      },
+      {
+        "category" : "drink",
+        "name" : "Горячий шоколад",
+        "priceMax" : 100,
+        "priceMin" : 80
+      },
+      {
+        "category" : "tea",
+        "name" : "Чай",
+        "priceMax" : 80,
+        "priceMin" : 60
+      },
+      {
+        "category" : "drink",
+        "name" : "Вода",
+        "priceMax" : 80,
+        "priceMin" : 60
+      },
+      {
+        "category" : "drink",
+        "name" : "Соки",
+        "priceMax" : 120,
+        "priceMin" : 80
+      },
+      {
+        "category" : "snack",
+        "name" : "Snickers / KitKat",
+        "priceMax" : 120,
+        "priceMin" : 80
+      },
+      {
+        "category" : "snack",
+        "name" : "Чипсы",
+        "priceMax" : 100,
+        "priceMin" : 80
+      },
+      {
+        "category" : "snack",
+        "name" : "Орехи",
+        "priceMax" : 150,
+        "priceMin" : 100
+      },
+      {
+        "category" : "snack",
+        "name" : "Печенье",
+        "priceMax" : 100,
+        "priceMin" : 60
+      },
+      {
+        "category" : "sandwich",
+        "name" : "Сэндвич в упаковке",
+        "priceMax" : 200,
+        "priceMin" : 120
+      }
+    ],
+    "name" : "Автомат (Главный корпус)",
+    "priceLevel" : "low",
+    "schedule" : {
+      "note" : "Круглосуточно"
+    }
   },
   {
-    "id": "vending_2nd",
-    "name": "Автомат (2-й корпус)",
-    "category": "vending",
-    "campusBuildingID": "tsu_second",
-    "address": "2-й корпус ТГУ",
-    "description": "Вендинговый автомат с напитками и снеками.",
-    "schedule": { "note": "Круглосуточно" },
-    "priceLevel": "low",
-    "rating": null,
-    "latitude": 56.47050,
-    "longitude": 84.94900,
-    "menu": [
-      { "name": "Эспрессо",          "category": "coffee",   "priceMin": 60,  "priceMax": 80 },
-      { "name": "Капучино",          "category": "coffee",   "priceMin": 80,  "priceMax": 120 },
-      { "name": "Чай",               "category": "tea",      "priceMin": 60,  "priceMax": 80 },
-      { "name": "Вода",              "category": "drink",    "priceMin": 60,  "priceMax": 80 },
-      { "name": "Энергетик",         "category": "drink",    "priceMin": 120, "priceMax": 180 },
-      { "name": "Snickers / KitKat", "category": "snack",    "priceMin": 80,  "priceMax": 120 },
-      { "name": "Чипсы",             "category": "snack",    "priceMin": 80,  "priceMax": 100 },
-      { "name": "Сэндвич в упаковке","category": "sandwich", "priceMin": 120, "priceMax": 200 }
-    ]
+    "address" : "2-й корпус ТГУ",
+    "campusBuildingCell" : {
+      "col" : 219,
+      "row" : 236
+    },
+    "category" : "vending",
+    "description" : "Вендинговый автомат с напитками и снеками.",
+    "id" : "vending_2nd",
+    "latitude" : 56.4705,
+    "longitude" : 84.949,
+    "menu" : [
+      {
+        "category" : "coffee",
+        "name" : "Эспрессо",
+        "priceMax" : 80,
+        "priceMin" : 60
+      },
+      {
+        "category" : "coffee",
+        "name" : "Капучино",
+        "priceMax" : 120,
+        "priceMin" : 80
+      },
+      {
+        "category" : "tea",
+        "name" : "Чай",
+        "priceMax" : 80,
+        "priceMin" : 60
+      },
+      {
+        "category" : "drink",
+        "name" : "Вода",
+        "priceMax" : 80,
+        "priceMin" : 60
+      },
+      {
+        "category" : "drink",
+        "name" : "Энергетик",
+        "priceMax" : 180,
+        "priceMin" : 120
+      },
+      {
+        "category" : "snack",
+        "name" : "Snickers / KitKat",
+        "priceMax" : 120,
+        "priceMin" : 80
+      },
+      {
+        "category" : "snack",
+        "name" : "Чипсы",
+        "priceMax" : 100,
+        "priceMin" : 80
+      },
+      {
+        "category" : "sandwich",
+        "name" : "Сэндвич в упаковке",
+        "priceMax" : 200,
+        "priceMin" : 120
+      }
+    ],
+    "name" : "Автомат (2-й корпус)",
+    "priceLevel" : "low",
+    "schedule" : {
+      "note" : "Круглосуточно"
+    }
   },
   {
-    "id": "buffet_2nd",
-    "name": "Буфет (2-й корпус)",
-    "category": "buffet",
-    "campusBuildingID": "tsu_second",
-    "address": "2-й корпус ТГУ",
-    "description": "Буфет с выпечкой, бутербродами и горячими напитками.",
-    "schedule": { "weekdays": "9:00–16:00", "weekends": null },
-    "priceLevel": "low",
-    "rating": null,
-    "latitude": 56.47055,
-    "longitude": 84.94910,
-    "menu": [
-      { "name": "Чай / Кофе",             "category": "coffee",   "priceMin": 40,  "priceMax": 80 },
-      { "name": "Булочки",                "category": "pastry",   "priceMin": 40,  "priceMax": 70 },
-      { "name": "Пирожки (капуста/мясо/яблоко)", "category": "pastry", "priceMin": 50, "priceMax": 80 },
-      { "name": "Беляши",                 "category": "pastry",   "priceMin": 60,  "priceMax": 90 },
-      { "name": "Сосиска в тесте",        "category": "pastry",   "priceMin": 70,  "priceMax": 100 },
-      { "name": "Бутерброд с сыром/колбасой", "category": "sandwich", "priceMin": 60, "priceMax": 100 },
-      { "name": "Печенье",                "category": "snack",    "priceMin": 30,  "priceMax": 60 },
-      { "name": "Соки",                   "category": "drink",    "priceMin": 60,  "priceMax": 100 }
-    ]
+    "address" : "2-й корпус ТГУ",
+    "campusBuildingCell" : {
+      "col" : 217,
+      "row" : 240
+    },
+    "category" : "buffet",
+    "description" : "Буфет с выпечкой, бутербродами и горячими напитками.",
+    "id" : "buffet_2nd",
+    "latitude" : 56.47055,
+    "longitude" : 84.9491,
+    "menu" : [
+      {
+        "category" : "coffee",
+        "name" : "Чай / Кофе",
+        "priceMax" : 80,
+        "priceMin" : 40
+      },
+      {
+        "category" : "pastry",
+        "name" : "Булочки",
+        "priceMax" : 70,
+        "priceMin" : 40
+      },
+      {
+        "category" : "pastry",
+        "name" : "Пирожки (капуста/мясо/яблоко)",
+        "priceMax" : 80,
+        "priceMin" : 50
+      },
+      {
+        "category" : "pastry",
+        "name" : "Беляши",
+        "priceMax" : 90,
+        "priceMin" : 60
+      },
+      {
+        "category" : "pastry",
+        "name" : "Сосиска в тесте",
+        "priceMax" : 100,
+        "priceMin" : 70
+      },
+      {
+        "category" : "sandwich",
+        "name" : "Бутерброд с сыром/колбасой",
+        "priceMax" : 100,
+        "priceMin" : 60
+      },
+      {
+        "category" : "snack",
+        "name" : "Печенье",
+        "priceMax" : 60,
+        "priceMin" : 30
+      },
+      {
+        "category" : "drink",
+        "name" : "Соки",
+        "priceMax" : 100,
+        "priceMin" : 60
+      }
+    ],
+    "name" : "Буфет (2-й корпус)",
+    "priceLevel" : "low",
+    "schedule" : {
+      "weekdays" : "9:00–16:00"
+    }
   },
   {
-    "id": "cafe_2nd",
-    "name": "Кафе (2-й корпус)",
-    "category": "cafeteria",
-    "campusBuildingID": "tsu_second",
-    "address": "2-й корпус ТГУ",
-    "description": "Кафе внутри корпуса — супы, горячие блюда, салаты.",
-    "schedule": { "weekdays": "9:00–16:00", "weekends": null },
-    "priceLevel": "medium",
-    "rating": null,
-    "latitude": 56.47060,
-    "longitude": 84.94920,
-    "menu": [
-      { "name": "Борщ",                     "category": "soup",    "priceMin": 80,  "priceMax": 120 },
-      { "name": "Щи",                       "category": "soup",    "priceMin": 80,  "priceMax": 120 },
-      { "name": "Рассольник",               "category": "soup",    "priceMin": 80,  "priceMax": 120 },
-      { "name": "Котлета + гарнир",          "category": "hot_meal","priceMin": 120, "priceMax": 200 },
-      { "name": "Оливье",                   "category": "salad",   "priceMin": 60,  "priceMax": 100 },
-      { "name": "Винегрет",                 "category": "salad",   "priceMin": 50,  "priceMax": 80 },
-      { "name": "Овощной салат",             "category": "salad",   "priceMin": 50,  "priceMax": 80 },
-      { "name": "Компот",                   "category": "drink",   "priceMin": 30,  "priceMax": 50 },
-      { "name": "Чай",                      "category": "tea",     "priceMin": 30,  "priceMax": 50 },
-      { "name": "Выпечка",                  "category": "pastry",  "priceMin": 40,  "priceMax": 80 }
-    ]
+    "address" : "2-й корпус ТГУ",
+    "campusBuildingCell" : {
+      "col" : 219,
+      "row" : 236
+    },
+    "category" : "cafeteria",
+    "description" : "Кафе внутри корпуса — супы, горячие блюда, салаты.",
+    "id" : "cafe_2nd",
+    "latitude" : 56.4706,
+    "longitude" : 84.9492,
+    "menu" : [
+      {
+        "category" : "soup",
+        "name" : "Борщ",
+        "priceMax" : 120,
+        "priceMin" : 80
+      },
+      {
+        "category" : "soup",
+        "name" : "Щи",
+        "priceMax" : 120,
+        "priceMin" : 80
+      },
+      {
+        "category" : "soup",
+        "name" : "Рассольник",
+        "priceMax" : 120,
+        "priceMin" : 80
+      },
+      {
+        "category" : "hot_meal",
+        "name" : "Котлета + гарнир",
+        "priceMax" : 200,
+        "priceMin" : 120
+      },
+      {
+        "category" : "salad",
+        "name" : "Оливье",
+        "priceMax" : 100,
+        "priceMin" : 60
+      },
+      {
+        "category" : "salad",
+        "name" : "Винегрет",
+        "priceMax" : 80,
+        "priceMin" : 50
+      },
+      {
+        "category" : "salad",
+        "name" : "Овощной салат",
+        "priceMax" : 80,
+        "priceMin" : 50
+      },
+      {
+        "category" : "drink",
+        "name" : "Компот",
+        "priceMax" : 50,
+        "priceMin" : 30
+      },
+      {
+        "category" : "tea",
+        "name" : "Чай",
+        "priceMax" : 50,
+        "priceMin" : 30
+      },
+      {
+        "category" : "pastry",
+        "name" : "Выпечка",
+        "priceMax" : 80,
+        "priceMin" : 40
+      }
+    ],
+    "name" : "Кафе (2-й корпус)",
+    "priceLevel" : "medium",
+    "schedule" : {
+      "weekdays" : "9:00–16:00"
+    }
   },
   {
-    "id": "canteen_tsu",
-    "name": "Столовая ТГУ",
-    "category": "canteen",
-    "campusBuildingID": "tsu_main",
-    "address": "пр. Ленина, 36 (главный корпус)",
-    "description": "Главная столовая университета. Классические комплексные обеды по студенческим ценам.",
-    "schedule": { "weekdays": "9:00–15:00", "weekends": null },
-    "priceLevel": "low",
-    "rating": null,
-    "latitude": 56.47120,
-    "longitude": 84.95040,
-    "menu": [
-      { "name": "Борщ",               "category": "soup",     "priceMin": 50,  "priceMax": 80 },
-      { "name": "Щи",                 "category": "soup",     "priceMin": 50,  "priceMax": 80 },
-      { "name": "Куриный суп",        "category": "soup",     "priceMin": 50,  "priceMax": 80 },
-      { "name": "Рассольник",         "category": "soup",     "priceMin": 50,  "priceMax": 80 },
-      { "name": "Котлета + пюре/рис/гречка", "category": "hot_meal", "priceMin": 80, "priceMax": 130 },
-      { "name": "Биток с гарниром",   "category": "hot_meal", "priceMin": 80,  "priceMax": 130 },
-      { "name": "Овощной салат",       "category": "salad",    "priceMin": 40,  "priceMax": 60 },
-      { "name": "Витаминный салат",    "category": "salad",    "priceMin": 40,  "priceMax": 60 },
-      { "name": "Свекольный салат",    "category": "salad",    "priceMin": 40,  "priceMax": 60 },
-      { "name": "Компот",             "category": "drink",    "priceMin": 20,  "priceMax": 40 },
-      { "name": "Чай / Кофе",         "category": "coffee",   "priceMin": 20,  "priceMax": 50 },
-      { "name": "Булочки / Пирожки",  "category": "pastry",   "priceMin": 30,  "priceMax": 60 }
-    ]
+    "address" : "пр. Ленина, 36 (главный корпус)",
+    "campusBuildingCell" : {
+      "col" : 308,
+      "row" : 208
+    },
+    "category" : "canteen",
+    "description" : "Главная столовая университета. Классические комплексные обеды по студенческим ценам.",
+    "id" : "canteen_tsu",
+    "latitude" : 56.4712,
+    "longitude" : 84.9504,
+    "menu" : [
+      {
+        "category" : "soup",
+        "name" : "Борщ",
+        "priceMax" : 80,
+        "priceMin" : 50
+      },
+      {
+        "category" : "soup",
+        "name" : "Щи",
+        "priceMax" : 80,
+        "priceMin" : 50
+      },
+      {
+        "category" : "soup",
+        "name" : "Куриный суп",
+        "priceMax" : 80,
+        "priceMin" : 50
+      },
+      {
+        "category" : "soup",
+        "name" : "Рассольник",
+        "priceMax" : 80,
+        "priceMin" : 50
+      },
+      {
+        "category" : "hot_meal",
+        "name" : "Котлета + пюре/рис/гречка",
+        "priceMax" : 130,
+        "priceMin" : 80
+      },
+      {
+        "category" : "hot_meal",
+        "name" : "Биток с гарниром",
+        "priceMax" : 130,
+        "priceMin" : 80
+      },
+      {
+        "category" : "salad",
+        "name" : "Овощной салат",
+        "priceMax" : 60,
+        "priceMin" : 40
+      },
+      {
+        "category" : "salad",
+        "name" : "Витаминный салат",
+        "priceMax" : 60,
+        "priceMin" : 40
+      },
+      {
+        "category" : "salad",
+        "name" : "Свекольный салат",
+        "priceMax" : 60,
+        "priceMin" : 40
+      },
+      {
+        "category" : "drink",
+        "name" : "Компот",
+        "priceMax" : 40,
+        "priceMin" : 20
+      },
+      {
+        "category" : "coffee",
+        "name" : "Чай / Кофе",
+        "priceMax" : 50,
+        "priceMin" : 20
+      },
+      {
+        "category" : "pastry",
+        "name" : "Булочки / Пирожки",
+        "priceMax" : 60,
+        "priceMin" : 30
+      }
+    ],
+    "name" : "Столовая ТГУ",
+    "priceLevel" : "low",
+    "schedule" : {
+      "weekdays" : "9:00–15:00"
+    }
   },
   {
-    "id": "sypbor",
-    "name": "Сып-Бор",
-    "category": "canteen",
-    "address": "Московский тракт, 2Г",
-    "description": "Столовая во дворе ТГУ. Популярна у иностранных студентов, дружелюбный персонал. Чуть шире выбор чем в столовой ТГУ — есть паста, плов, запеканки.",
-    "schedule": { "weekdays": "9:00–16:00", "weekends": null },
-    "priceLevel": "medium",
-    "rating": null,
-    "latitude": 56.46850,
-    "longitude": 84.94400,
-    "menu": [
-      { "name": "Супы",                   "category": "soup",     "priceMin": 80,  "priceMax": 130 },
-      { "name": "Горячее с гарниром",     "category": "hot_meal", "priceMin": 120, "priceMax": 220 },
-      { "name": "Паста",                  "category": "hot_meal", "priceMin": 130, "priceMax": 200 },
-      { "name": "Плов",                   "category": "hot_meal", "priceMin": 120, "priceMax": 180 },
-      { "name": "Запеканки",              "category": "hot_meal", "priceMin": 100, "priceMax": 160 },
-      { "name": "Салаты",                 "category": "salad",    "priceMin": 60,  "priceMax": 100 },
-      { "name": "Кофе навынос",           "category": "coffee",   "priceMin": 80,  "priceMax": 150 }
-    ]
+    "address" : "Московский тракт, 2Г",
+    "campusBuildingCell" : {
+      "col" : 240,
+      "row" : 99
+    },
+    "category" : "canteen",
+    "description" : "Столовая во дворе ТГУ. Популярна у иностранных студентов, дружелюбный персонал. Чуть шире выбор чем в столовой ТГУ — есть паста, плов, запеканки.",
+    "id" : "sypbor",
+    "latitude" : 56.4685,
+    "longitude" : 84.944,
+    "menu" : [
+      {
+        "category" : "soup",
+        "name" : "Супы",
+        "priceMax" : 130,
+        "priceMin" : 80
+      },
+      {
+        "category" : "hot_meal",
+        "name" : "Горячее с гарниром",
+        "priceMax" : 220,
+        "priceMin" : 120
+      },
+      {
+        "category" : "hot_meal",
+        "name" : "Паста",
+        "priceMax" : 200,
+        "priceMin" : 130
+      },
+      {
+        "category" : "hot_meal",
+        "name" : "Плов",
+        "priceMax" : 180,
+        "priceMin" : 120
+      },
+      {
+        "category" : "hot_meal",
+        "name" : "Запеканки",
+        "priceMax" : 160,
+        "priceMin" : 100
+      },
+      {
+        "category" : "salad",
+        "name" : "Салаты",
+        "priceMax" : 100,
+        "priceMin" : 60
+      },
+      {
+        "category" : "coffee",
+        "name" : "Кофе навынос",
+        "priceMax" : 150,
+        "priceMin" : 80
+      }
+    ],
+    "name" : "Сып-Бор",
+    "priceLevel" : "medium",
+    "schedule" : {
+      "weekdays" : "9:00–16:00"
+    }
   },
   {
-    "id": "ukromnoe",
-    "name": "Укромное местечко",
-    "category": "canteen",
-    "address": "Московский тракт, 2",
-    "description": "Лучшие отзывы среди студенческих столовых. Разнообразное меню, большие порции. Трёхблюдный обед ~150 ₽.",
-    "schedule": { "weekdays": "9:00–17:00", "weekends": null },
-    "priceLevel": "medium",
-    "rating": 4.7,
-    "latitude": 56.46870,
-    "longitude": 84.94450,
-    "menu": [
-      { "name": "Супы дня",                "category": "soup",     "priceMin": 60,  "priceMax": 100 },
-      { "name": "Горячее с гарниром",      "category": "hot_meal", "priceMin": 100, "priceMax": 180 },
-      { "name": "Салаты",                  "category": "salad",    "priceMin": 50,  "priceMax": 90 },
-      { "name": "Выпечка",                "category": "pastry",   "priceMin": 40,  "priceMax": 80 },
-      { "name": "Окрошка (в сезон)",       "category": "soup",     "priceMin": 70,  "priceMax": 100 },
-      { "name": "Домашние напитки",        "category": "drink",    "priceMin": 30,  "priceMax": 60 }
-    ]
+    "address" : "Московский тракт, 2",
+    "campusBuildingCell" : {
+      "col" : 355,
+      "row" : 5
+    },
+    "category" : "canteen",
+    "description" : "Лучшие отзывы среди студенческих столовых. Разнообразное меню, большие порции. Трёхблюдный обед ~150 ₽.",
+    "id" : "ukromnoe",
+    "latitude" : 56.4687,
+    "longitude" : 84.9445,
+    "menu" : [
+      {
+        "category" : "soup",
+        "name" : "Супы дня",
+        "priceMax" : 100,
+        "priceMin" : 60
+      },
+      {
+        "category" : "hot_meal",
+        "name" : "Горячее с гарниром",
+        "priceMax" : 180,
+        "priceMin" : 100
+      },
+      {
+        "category" : "salad",
+        "name" : "Салаты",
+        "priceMax" : 90,
+        "priceMin" : 50
+      },
+      {
+        "category" : "pastry",
+        "name" : "Выпечка",
+        "priceMax" : 80,
+        "priceMin" : 40
+      },
+      {
+        "category" : "soup",
+        "name" : "Окрошка (в сезон)",
+        "priceMax" : 100,
+        "priceMin" : 70
+      },
+      {
+        "category" : "drink",
+        "name" : "Домашние напитки",
+        "priceMax" : 60,
+        "priceMin" : 30
+      }
+    ],
+    "name" : "Укромное местечко",
+    "priceLevel" : "medium",
+    "rating" : 4.7,
+    "schedule" : {
+      "weekdays" : "9:00–17:00"
+    }
   },
   {
-    "id": "canteen_tpu",
-    "name": "Столовая НИ ТПУ",
-    "category": "canteen",
-    "address": "пр. Ленина, 30",
-    "description": "Классическая столовая. Стандартный набор: первое, второе, салат, компот. Оплата наличными (банкомат Газпром рядом).",
-    "schedule": { "weekdays": "9:00–16:00", "weekends": null },
-    "priceLevel": "medium",
-    "rating": null,
-    "latitude": 56.47200,
-    "longitude": 84.94650,
-    "menu": [
-      { "name": "Суп дня",            "category": "soup",     "priceMin": 60,  "priceMax": 100 },
-      { "name": "Второе с гарниром",  "category": "hot_meal", "priceMin": 100, "priceMax": 170 },
-      { "name": "Салат",              "category": "salad",    "priceMin": 40,  "priceMax": 70 },
-      { "name": "Компот",             "category": "drink",    "priceMin": 20,  "priceMax": 40 }
-    ]
+    "address" : "пр. Ленина, 30",
+    "campusBuildingCell" : {
+      "col" : 396,
+      "row" : 467
+    },
+    "category" : "canteen",
+    "description" : "Классическая столовая. Стандартный набор: первое, второе, салат, компот. Оплата наличными (банкомат Газпром рядом).",
+    "id" : "canteen_tpu",
+    "latitude" : 56.472,
+    "longitude" : 84.9465,
+    "menu" : [
+      {
+        "category" : "soup",
+        "name" : "Суп дня",
+        "priceMax" : 100,
+        "priceMin" : 60
+      },
+      {
+        "category" : "hot_meal",
+        "name" : "Второе с гарниром",
+        "priceMax" : 170,
+        "priceMin" : 100
+      },
+      {
+        "category" : "salad",
+        "name" : "Салат",
+        "priceMax" : 70,
+        "priceMin" : 40
+      },
+      {
+        "category" : "drink",
+        "name" : "Компот",
+        "priceMax" : 40,
+        "priceMin" : 20
+      }
+    ],
+    "name" : "Столовая НИ ТПУ",
+    "priceLevel" : "medium",
+    "schedule" : {
+      "weekdays" : "9:00–16:00"
+    }
   },
   {
-    "id": "babaroma",
-    "name": "Baba Roma",
-    "category": "coffeeshop",
-    "address": "пр. Ленина, 63",
-    "description": "Кофейня с авторской выпечкой — ромовые бабы, круассаны, эклеры.",
-    "schedule": { "weekdays": "8:00–21:00", "weekends": "9:00–21:00" },
-    "priceLevel": "medium",
-    "rating": null,
-    "latitude": 56.46850,
-    "longitude": 84.95300,
-    "menu": [
-      { "name": "Эспрессо",      "category": "coffee",  "priceMin": 120, "priceMax": 150 },
-      { "name": "Капучино",      "category": "coffee",  "priceMin": 180, "priceMax": 250 },
-      { "name": "Американо",     "category": "coffee",  "priceMin": 150, "priceMax": 200 },
-      { "name": "Раф",           "category": "coffee",  "priceMin": 200, "priceMax": 280 },
-      { "name": "Ромовые бабы",  "category": "dessert", "priceMin": 120, "priceMax": 200 },
-      { "name": "Круассаны",     "category": "pastry",  "priceMin": 150, "priceMax": 250 },
-      { "name": "Эклеры",        "category": "dessert", "priceMin": 150, "priceMax": 220 },
-      { "name": "Бисквиты",      "category": "dessert", "priceMin": 130, "priceMax": 200 },
-      { "name": "Слойки",        "category": "pastry",  "priceMin": 120, "priceMax": 180 },
-      { "name": "Чай",           "category": "tea",     "priceMin": 100, "priceMax": 150 }
-    ]
+    "address" : "пр. Ленина, 63",
+    "campusBuildingCell" : {
+      "col" : 463,
+      "row" : 63
+    },
+    "category" : "coffeeshop",
+    "description" : "Кофейня с авторской выпечкой — ромовые бабы, круассаны, эклеры.",
+    "id" : "babaroma",
+    "latitude" : 56.4685,
+    "longitude" : 84.953,
+    "menu" : [
+      {
+        "category" : "coffee",
+        "name" : "Эспрессо",
+        "priceMax" : 150,
+        "priceMin" : 120
+      },
+      {
+        "category" : "coffee",
+        "name" : "Капучино",
+        "priceMax" : 250,
+        "priceMin" : 180
+      },
+      {
+        "category" : "coffee",
+        "name" : "Американо",
+        "priceMax" : 200,
+        "priceMin" : 150
+      },
+      {
+        "category" : "coffee",
+        "name" : "Раф",
+        "priceMax" : 280,
+        "priceMin" : 200
+      },
+      {
+        "category" : "dessert",
+        "name" : "Ромовые бабы",
+        "priceMax" : 200,
+        "priceMin" : 120
+      },
+      {
+        "category" : "pastry",
+        "name" : "Круассаны",
+        "priceMax" : 250,
+        "priceMin" : 150
+      },
+      {
+        "category" : "dessert",
+        "name" : "Эклеры",
+        "priceMax" : 220,
+        "priceMin" : 150
+      },
+      {
+        "category" : "dessert",
+        "name" : "Бисквиты",
+        "priceMax" : 200,
+        "priceMin" : 130
+      },
+      {
+        "category" : "pastry",
+        "name" : "Слойки",
+        "priceMax" : 180,
+        "priceMin" : 120
+      },
+      {
+        "category" : "tea",
+        "name" : "Чай",
+        "priceMax" : 150,
+        "priceMin" : 100
+      }
+    ],
+    "name" : "Baba Roma",
+    "priceLevel" : "medium",
+    "schedule" : {
+      "weekdays" : "8:00–21:00",
+      "weekends" : "9:00–21:00"
+    }
   },
   {
-    "id": "territory_coffee",
-    "name": "Территория Кофе",
-    "category": "coffeeshop",
-    "address": "ул. Усова, 9Б",
-    "description": "Лучший кофе в районе по отзывам. Wi-Fi, розетки — удобно для учёбы. Есть растительное молоко, веганские снеки.",
-    "schedule": { "note": "Ежедневно 7:00–22:00" },
-    "priceLevel": "high",
-    "rating": 4.8,
-    "latitude": 56.46800,
-    "longitude": 84.94850,
-    "menu": [
-      { "name": "Кофе (все виды)",          "category": "coffee",   "priceMin": 180, "priceMax": 350 },
-      { "name": "На растительном молоке",   "category": "coffee",   "priceMin": 220, "priceMax": 400 },
-      { "name": "Авторские чаи",            "category": "tea",      "priceMin": 150, "priceMax": 250 },
-      { "name": "Лимонады",                 "category": "drink",    "priceMin": 180, "priceMax": 280 },
-      { "name": "Сэндвичи",                 "category": "sandwich", "priceMin": 200, "priceMax": 350 },
-      { "name": "Тосты",                    "category": "sandwich", "priceMin": 200, "priceMax": 320 },
-      { "name": "Круассаны",                "category": "pastry",   "priceMin": 180, "priceMax": 280 },
-      { "name": "Десерты",                  "category": "dessert",  "priceMin": 200, "priceMax": 350 },
-      { "name": "Веганские снеки",          "category": "snack",    "priceMin": 150, "priceMax": 250 }
-    ]
+    "address" : "ул. Усова, 9Б",
+    "campusBuildingCell" : {
+      "col" : 682,
+      "row" : 507
+    },
+    "category" : "coffeeshop",
+    "description" : "Лучший кофе в районе по отзывам. Wi-Fi, розетки — удобно для учёбы. Есть растительное молоко, веганские снеки.",
+    "id" : "territory_coffee",
+    "latitude" : 56.468,
+    "longitude" : 84.9485,
+    "menu" : [
+      {
+        "category" : "coffee",
+        "name" : "Кофе (все виды)",
+        "priceMax" : 350,
+        "priceMin" : 180
+      },
+      {
+        "category" : "coffee",
+        "name" : "На растительном молоке",
+        "priceMax" : 400,
+        "priceMin" : 220
+      },
+      {
+        "category" : "tea",
+        "name" : "Авторские чаи",
+        "priceMax" : 250,
+        "priceMin" : 150
+      },
+      {
+        "category" : "drink",
+        "name" : "Лимонады",
+        "priceMax" : 280,
+        "priceMin" : 180
+      },
+      {
+        "category" : "sandwich",
+        "name" : "Сэндвичи",
+        "priceMax" : 350,
+        "priceMin" : 200
+      },
+      {
+        "category" : "sandwich",
+        "name" : "Тосты",
+        "priceMax" : 320,
+        "priceMin" : 200
+      },
+      {
+        "category" : "pastry",
+        "name" : "Круассаны",
+        "priceMax" : 280,
+        "priceMin" : 180
+      },
+      {
+        "category" : "dessert",
+        "name" : "Десерты",
+        "priceMax" : 350,
+        "priceMin" : 200
+      },
+      {
+        "category" : "snack",
+        "name" : "Веганские снеки",
+        "priceMax" : 250,
+        "priceMin" : 150
+      }
+    ],
+    "name" : "Территория Кофе",
+    "priceLevel" : "high",
+    "rating" : 4.8,
+    "schedule" : {
+      "note" : "Ежедневно 7:00–22:00"
+    }
   },
   {
-    "id": "u_mamy",
-    "name": "Кафе «У Мамы»",
-    "category": "cafe",
-    "address": "Московский тракт, 6/3",
-    "description": "Домашняя кухня — выпечка, горячие блюда дня. Меню меняется ежедневно. Средний обед ~200–250 ₽.",
-    "schedule": { "note": "Ежедневно 9:00–21:00" },
-    "priceLevel": "medium",
-    "rating": 4.7,
-    "latitude": 56.46750,
-    "longitude": 84.94350,
-    "menu": [
-      { "name": "Булочки / Пироги",   "category": "pastry",    "priceMin": 60,  "priceMax": 120 },
-      { "name": "Кексы",              "category": "dessert",   "priceMin": 80,  "priceMax": 150 },
-      { "name": "Торты на заказ",      "category": "dessert",   "priceMin": 500, "priceMax": 500 },
-      { "name": "Горячее блюдо дня",   "category": "hot_meal",  "priceMin": 150, "priceMax": 250 },
-      { "name": "Омлет / Каша",        "category": "breakfast", "priceMin": 100, "priceMax": 180 },
-      { "name": "Чай / Кофе",          "category": "coffee",    "priceMin": 60,  "priceMax": 120 }
-    ]
+    "address" : "Московский тракт, 6/3",
+    "category" : "cafe",
+    "description" : "Домашняя кухня — выпечка, горячие блюда дня. Меню меняется ежедневно. Средний обед ~200–250 ₽.",
+    "id" : "u_mamy",
+    "latitude" : 56.4675,
+    "longitude" : 84.9435,
+    "menu" : [
+      {
+        "category" : "pastry",
+        "name" : "Булочки / Пироги",
+        "priceMax" : 120,
+        "priceMin" : 60
+      },
+      {
+        "category" : "dessert",
+        "name" : "Кексы",
+        "priceMax" : 150,
+        "priceMin" : 80
+      },
+      {
+        "category" : "dessert",
+        "name" : "Торты на заказ",
+        "priceMax" : 500,
+        "priceMin" : 500
+      },
+      {
+        "category" : "hot_meal",
+        "name" : "Горячее блюдо дня",
+        "priceMax" : 250,
+        "priceMin" : 150
+      },
+      {
+        "category" : "breakfast",
+        "name" : "Омлет / Каша",
+        "priceMax" : 180,
+        "priceMin" : 100
+      },
+      {
+        "category" : "coffee",
+        "name" : "Чай / Кофе",
+        "priceMax" : 120,
+        "priceMin" : 60
+      }
+    ],
+    "name" : "Кафе «У Мамы»",
+    "priceLevel" : "medium",
+    "rating" : 4.7,
+    "schedule" : {
+      "note" : "Ежедневно 9:00–21:00"
+    }
   },
   {
-    "id": "bazhet_omlet",
-    "name": "Бажет Омлет",
-    "category": "cafe",
-    "address": "пр. Ленина, 55",
-    "description": "Завтраки весь день. Омлеты, яйца бенедикт, панкейки, авокадо-тосты. Также супы, салаты, горячие сэндвичи.",
-    "schedule": { "weekdays": "8:30–21:30", "weekends": "10:00–21:30" },
-    "priceLevel": "high",
-    "rating": 4.4,
-    "latitude": 56.46950,
-    "longitude": 84.95200,
-    "menu": [
-      { "name": "Омлет классический",    "category": "breakfast", "priceMin": 250, "priceMax": 350 },
-      { "name": "Омлет с овощами/сыром", "category": "breakfast", "priceMin": 300, "priceMax": 400 },
-      { "name": "Омлет с беконом",       "category": "breakfast", "priceMin": 350, "priceMax": 450 },
-      { "name": "Яйца Бенедикт",        "category": "breakfast", "priceMin": 350, "priceMax": 500 },
-      { "name": "Сырники",              "category": "breakfast", "priceMin": 250, "priceMax": 350 },
-      { "name": "Панкейки",             "category": "breakfast", "priceMin": 280, "priceMax": 380 },
-      { "name": "Авокадо-тост",          "category": "breakfast", "priceMin": 300, "priceMax": 450 },
-      { "name": "Гранола с йогуртом",    "category": "breakfast", "priceMin": 250, "priceMax": 350 },
-      { "name": "Супы",                 "category": "soup",      "priceMin": 200, "priceMax": 300 },
-      { "name": "Салаты",               "category": "salad",     "priceMin": 250, "priceMax": 400 },
-      { "name": "Горячие бажеты",        "category": "sandwich",  "priceMin": 300, "priceMax": 500 },
-      { "name": "Кофе",                 "category": "coffee",    "priceMin": 180, "priceMax": 300 },
-      { "name": "Смузи / Соки",          "category": "drink",     "priceMin": 250, "priceMax": 400 },
-      { "name": "Милкшейки",            "category": "drink",     "priceMin": 280, "priceMax": 400 }
-    ]
+    "address" : "пр. Ленина, 55",
+    "campusBuildingCell" : {
+      "col" : 473,
+      "row" : 118
+    },
+    "category" : "cafe",
+    "description" : "Завтраки весь день. Омлеты, яйца бенедикт, панкейки, авокадо-тосты. Также супы, салаты, горячие сэндвичи.",
+    "id" : "bazhet_omlet",
+    "latitude" : 56.4695,
+    "longitude" : 84.952,
+    "menu" : [
+      {
+        "category" : "breakfast",
+        "name" : "Омлет классический",
+        "priceMax" : 350,
+        "priceMin" : 250
+      },
+      {
+        "category" : "breakfast",
+        "name" : "Омлет с овощами/сыром",
+        "priceMax" : 400,
+        "priceMin" : 300
+      },
+      {
+        "category" : "breakfast",
+        "name" : "Омлет с беконом",
+        "priceMax" : 450,
+        "priceMin" : 350
+      },
+      {
+        "category" : "breakfast",
+        "name" : "Яйца Бенедикт",
+        "priceMax" : 500,
+        "priceMin" : 350
+      },
+      {
+        "category" : "breakfast",
+        "name" : "Сырники",
+        "priceMax" : 350,
+        "priceMin" : 250
+      },
+      {
+        "category" : "breakfast",
+        "name" : "Панкейки",
+        "priceMax" : 380,
+        "priceMin" : 280
+      },
+      {
+        "category" : "breakfast",
+        "name" : "Авокадо-тост",
+        "priceMax" : 450,
+        "priceMin" : 300
+      },
+      {
+        "category" : "breakfast",
+        "name" : "Гранола с йогуртом",
+        "priceMax" : 350,
+        "priceMin" : 250
+      },
+      {
+        "category" : "soup",
+        "name" : "Супы",
+        "priceMax" : 300,
+        "priceMin" : 200
+      },
+      {
+        "category" : "salad",
+        "name" : "Салаты",
+        "priceMax" : 400,
+        "priceMin" : 250
+      },
+      {
+        "category" : "sandwich",
+        "name" : "Горячие бажеты",
+        "priceMax" : 500,
+        "priceMin" : 300
+      },
+      {
+        "category" : "coffee",
+        "name" : "Кофе",
+        "priceMax" : 300,
+        "priceMin" : 180
+      },
+      {
+        "category" : "drink",
+        "name" : "Смузи / Соки",
+        "priceMax" : 400,
+        "priceMin" : 250
+      },
+      {
+        "category" : "drink",
+        "name" : "Милкшейки",
+        "priceMax" : 400,
+        "priceMin" : 280
+      }
+    ],
+    "name" : "Бажет Омлет",
+    "priceLevel" : "high",
+    "rating" : 4.4,
+    "schedule" : {
+      "weekdays" : "8:30–21:30",
+      "weekends" : "10:00–21:30"
+    }
   },
   {
-    "id": "rostics",
-    "name": "Rostic's",
-    "category": "fastfood",
-    "address": "пр. Ленина, 51А",
-    "description": "Бургеры, крылышки, стрипсы. Завтраки до 11:00.",
-    "schedule": { "note": "Ежедневно 9:00–23:00" },
-    "priceLevel": "high",
-    "rating": null,
-    "latitude": 56.47000,
-    "longitude": 84.95150,
-    "menu": [
-      { "name": "Биг Крисп",              "category": "hot_meal",  "priceMin": 250, "priceMax": 350 },
-      { "name": "Чизбургер",              "category": "hot_meal",  "priceMin": 150, "priceMax": 200 },
-      { "name": "Твистер",                "category": "hot_meal",  "priceMin": 200, "priceMax": 300 },
-      { "name": "Крылышки (острые/ориг.)", "category": "hot_meal", "priceMin": 200, "priceMax": 400 },
-      { "name": "Стрипсы",                "category": "hot_meal",  "priceMin": 180, "priceMax": 350 },
-      { "name": "Картофель фри",           "category": "snack",     "priceMin": 100, "priceMax": 180 },
-      { "name": "Попкорн-курица",          "category": "snack",     "priceMin": 150, "priceMax": 280 },
-      { "name": "Картофель по-деревенски", "category": "snack",     "priceMin": 100, "priceMax": 160 },
-      { "name": "Pepsi / 7UP",             "category": "drink",     "priceMin": 100, "priceMax": 160 },
-      { "name": "Молочный коктейль",       "category": "drink",     "priceMin": 150, "priceMax": 250 },
-      { "name": "Завтрак (до 11:00)",      "category": "breakfast", "priceMin": 150, "priceMax": 250 }
-    ]
+    "address" : "пр. Ленина, 51А",
+    "campusBuildingCell" : {
+      "col" : 463,
+      "row" : 204
+    },
+    "category" : "fastfood",
+    "description" : "Бургеры, крылышки, стрипсы. Завтраки до 11:00.",
+    "id" : "rostics",
+    "latitude" : 56.47,
+    "longitude" : 84.9515,
+    "menu" : [
+      {
+        "category" : "hot_meal",
+        "name" : "Биг Крисп",
+        "priceMax" : 350,
+        "priceMin" : 250
+      },
+      {
+        "category" : "hot_meal",
+        "name" : "Чизбургер",
+        "priceMax" : 200,
+        "priceMin" : 150
+      },
+      {
+        "category" : "hot_meal",
+        "name" : "Твистер",
+        "priceMax" : 300,
+        "priceMin" : 200
+      },
+      {
+        "category" : "hot_meal",
+        "name" : "Крылышки (острые/ориг.)",
+        "priceMax" : 400,
+        "priceMin" : 200
+      },
+      {
+        "category" : "hot_meal",
+        "name" : "Стрипсы",
+        "priceMax" : 350,
+        "priceMin" : 180
+      },
+      {
+        "category" : "snack",
+        "name" : "Картофель фри",
+        "priceMax" : 180,
+        "priceMin" : 100
+      },
+      {
+        "category" : "snack",
+        "name" : "Попкорн-курица",
+        "priceMax" : 280,
+        "priceMin" : 150
+      },
+      {
+        "category" : "snack",
+        "name" : "Картофель по-деревенски",
+        "priceMax" : 160,
+        "priceMin" : 100
+      },
+      {
+        "category" : "drink",
+        "name" : "Pepsi / 7UP",
+        "priceMax" : 160,
+        "priceMin" : 100
+      },
+      {
+        "category" : "drink",
+        "name" : "Молочный коктейль",
+        "priceMax" : 250,
+        "priceMin" : 150
+      },
+      {
+        "category" : "breakfast",
+        "name" : "Завтрак (до 11:00)",
+        "priceMax" : 250,
+        "priceMin" : 150
+      }
+    ],
+    "name" : "Rostic's",
+    "priceLevel" : "high",
+    "schedule" : {
+      "note" : "Ежедневно 9:00–23:00"
+    }
   },
   {
-    "id": "lampochka",
-    "name": "Лампочка",
-    "category": "gastrohall",
-    "address": "ул. Белинского / Усова, 11",
-    "description": "Гастрохол с несколькими концепциями: бельгийские вафли, торты и пирожные, горячая еда, кофе.",
-    "schedule": { "note": "Ежедневно 8:00–23:00" },
-    "priceLevel": "high",
-    "rating": null,
-    "latitude": 56.46750,
-    "longitude": 84.95000,
-    "menu": [
-      { "name": "Венские вафли",             "category": "dessert",  "priceMin": 250, "priceMax": 450 },
-      { "name": "Брюссельские вафли",        "category": "dessert",  "priceMin": 300, "priceMax": 500 },
-      { "name": "Начинки (нутелла/карамель/ягоды/мороженое)", "category": "dessert", "priceMin": 50, "priceMax": 150 },
-      { "name": "Медовик",                  "category": "dessert",  "priceMin": 200, "priceMax": 350 },
-      { "name": "Наполеон",                 "category": "dessert",  "priceMin": 200, "priceMax": 350 },
-      { "name": "Чизкейк",                  "category": "dessert",  "priceMin": 250, "priceMax": 400 },
-      { "name": "Эклеры",                   "category": "dessert",  "priceMin": 150, "priceMax": 250 },
-      { "name": "Супы",                     "category": "soup",     "priceMin": 200, "priceMax": 350 },
-      { "name": "Паста",                    "category": "hot_meal", "priceMin": 300, "priceMax": 500 },
-      { "name": "Бургеры",                  "category": "hot_meal", "priceMin": 350, "priceMax": 550 },
-      { "name": "Кофе",                     "category": "coffee",   "priceMin": 150, "priceMax": 300 }
-    ]
+    "address" : "ул. Белинского / Усова, 11",
+    "campusBuildingCell" : {
+      "col" : 681,
+      "row" : 447
+    },
+    "category" : "gastrohall",
+    "description" : "Гастрохол с несколькими концепциями: бельгийские вафли, торты и пирожные, горячая еда, кофе.",
+    "id" : "lampochka",
+    "latitude" : 56.4675,
+    "longitude" : 84.95,
+    "menu" : [
+      {
+        "category" : "dessert",
+        "name" : "Венские вафли",
+        "priceMax" : 450,
+        "priceMin" : 250
+      },
+      {
+        "category" : "dessert",
+        "name" : "Брюссельские вафли",
+        "priceMax" : 500,
+        "priceMin" : 300
+      },
+      {
+        "category" : "dessert",
+        "name" : "Начинки (нутелла/карамель/ягоды/мороженое)",
+        "priceMax" : 150,
+        "priceMin" : 50
+      },
+      {
+        "category" : "dessert",
+        "name" : "Медовик",
+        "priceMax" : 350,
+        "priceMin" : 200
+      },
+      {
+        "category" : "dessert",
+        "name" : "Наполеон",
+        "priceMax" : 350,
+        "priceMin" : 200
+      },
+      {
+        "category" : "dessert",
+        "name" : "Чизкейк",
+        "priceMax" : 400,
+        "priceMin" : 250
+      },
+      {
+        "category" : "dessert",
+        "name" : "Эклеры",
+        "priceMax" : 250,
+        "priceMin" : 150
+      },
+      {
+        "category" : "soup",
+        "name" : "Супы",
+        "priceMax" : 350,
+        "priceMin" : 200
+      },
+      {
+        "category" : "hot_meal",
+        "name" : "Паста",
+        "priceMax" : 500,
+        "priceMin" : 300
+      },
+      {
+        "category" : "hot_meal",
+        "name" : "Бургеры",
+        "priceMax" : 550,
+        "priceMin" : 350
+      },
+      {
+        "category" : "coffee",
+        "name" : "Кофе",
+        "priceMax" : 300,
+        "priceMin" : 150
+      }
+    ],
+    "name" : "Лампочка",
+    "priceLevel" : "high",
+    "schedule" : {
+      "note" : "Ежедневно 8:00–23:00"
+    }
   },
   {
-    "id": "abrikos",
-    "name": "Абрикос",
-    "category": "shop",
-    "address": "Московский тракт, 17",
-    "description": "Полноценный супермаркет, ближайший к общежитиям ТГУ. Всё для готовки и перекуса: хлеб, молочка, мясо, рыба, овощи, готовая еда, курица-гриль.",
-    "schedule": { "note": "Ежедневно 8:00–23:00" },
-    "priceLevel": "medium",
-    "rating": 4.3,
-    "latitude": 56.46600,
-    "longitude": 84.94200,
-    "menu": [
-      { "name": "Хлеб, выпечка",      "category": "grocery",  "priceMin": 30,  "priceMax": 150 },
-      { "name": "Молочные продукты",   "category": "grocery",  "priceMin": 50,  "priceMax": 200 },
-      { "name": "Мясо / Рыба",         "category": "grocery",  "priceMin": 150, "priceMax": 500 },
-      { "name": "Овощи / Фрукты",      "category": "grocery",  "priceMin": 50,  "priceMax": 300 },
-      { "name": "Готовые салаты",       "category": "salad",    "priceMin": 80,  "priceMax": 200 },
-      { "name": "Курица-гриль",        "category": "hot_meal", "priceMin": 300, "priceMax": 500 },
-      { "name": "Готовая выпечка",      "category": "pastry",   "priceMin": 50,  "priceMax": 150 },
-      { "name": "Напитки",             "category": "drink",    "priceMin": 30,  "priceMax": 150 },
-      { "name": "Снеки / Чипсы",        "category": "snack",    "priceMin": 50,  "priceMax": 200 }
-    ]
+    "address" : "Московский тракт, 17",
+    "campusBuildingCell" : {
+      "col" : 68,
+      "row" : 50
+    },
+    "category" : "shop",
+    "description" : "Полноценный супермаркет, ближайший к общежитиям ТГУ. Всё для готовки и перекуса: хлеб, молочка, мясо, рыба, овощи, готовая еда, курица-гриль.",
+    "id" : "abrikos",
+    "latitude" : 56.466,
+    "longitude" : 84.942,
+    "menu" : [
+      {
+        "category" : "grocery",
+        "name" : "Хлеб, выпечка",
+        "priceMax" : 150,
+        "priceMin" : 30
+      },
+      {
+        "category" : "grocery",
+        "name" : "Молочные продукты",
+        "priceMax" : 200,
+        "priceMin" : 50
+      },
+      {
+        "category" : "grocery",
+        "name" : "Мясо / Рыба",
+        "priceMax" : 500,
+        "priceMin" : 150
+      },
+      {
+        "category" : "grocery",
+        "name" : "Овощи / Фрукты",
+        "priceMax" : 300,
+        "priceMin" : 50
+      },
+      {
+        "category" : "salad",
+        "name" : "Готовые салаты",
+        "priceMax" : 200,
+        "priceMin" : 80
+      },
+      {
+        "category" : "hot_meal",
+        "name" : "Курица-гриль",
+        "priceMax" : 500,
+        "priceMin" : 300
+      },
+      {
+        "category" : "pastry",
+        "name" : "Готовая выпечка",
+        "priceMax" : 150,
+        "priceMin" : 50
+      },
+      {
+        "category" : "drink",
+        "name" : "Напитки",
+        "priceMax" : 150,
+        "priceMin" : 30
+      },
+      {
+        "category" : "snack",
+        "name" : "Снеки / Чипсы",
+        "priceMax" : 200,
+        "priceMin" : 50
+      }
+    ],
+    "name" : "Абрикос",
+    "priceLevel" : "medium",
+    "rating" : 4.3,
+    "schedule" : {
+      "note" : "Ежедневно 8:00–23:00"
+    }
   },
   {
-    "id": "nash_gastronom",
-    "name": "Наш Гастроном",
-    "category": "shop",
-    "address": "ул. Советская, 50",
-    "description": "Круглосуточный магазин. Готовая еда, продукты, перекусы, товары первой необходимости.",
-    "schedule": { "note": "Круглосуточно" },
-    "priceLevel": "medium",
-    "rating": null,
-    "latitude": 56.47150,
-    "longitude": 84.94900,
-    "menu": [
-      { "name": "Готовые котлеты",     "category": "hot_meal", "priceMin": 80,  "priceMax": 150 },
-      { "name": "Готовые салаты",      "category": "salad",    "priceMin": 70,  "priceMax": 150 },
-      { "name": "Нарезки",            "category": "grocery",  "priceMin": 100, "priceMax": 250 },
-      { "name": "Хлеб",               "category": "grocery",  "priceMin": 30,  "priceMax": 80 },
-      { "name": "Молочка",            "category": "grocery",  "priceMin": 50,  "priceMax": 150 },
-      { "name": "Снеки",              "category": "snack",    "priceMin": 50,  "priceMax": 150 },
-      { "name": "Напитки",            "category": "drink",    "priceMin": 30,  "priceMax": 100 }
-    ]
+    "address" : "ул. Советская, 50",
+    "campusBuildingCell" : {
+      "col" : 550,
+      "row" : 173
+    },
+    "category" : "shop",
+    "description" : "Круглосуточный магазин. Готовая еда, продукты, перекусы, товары первой необходимости.",
+    "id" : "nash_gastronom",
+    "latitude" : 56.4715,
+    "longitude" : 84.949,
+    "menu" : [
+      {
+        "category" : "hot_meal",
+        "name" : "Готовые котлеты",
+        "priceMax" : 150,
+        "priceMin" : 80
+      },
+      {
+        "category" : "salad",
+        "name" : "Готовые салаты",
+        "priceMax" : 150,
+        "priceMin" : 70
+      },
+      {
+        "category" : "grocery",
+        "name" : "Нарезки",
+        "priceMax" : 250,
+        "priceMin" : 100
+      },
+      {
+        "category" : "grocery",
+        "name" : "Хлеб",
+        "priceMax" : 80,
+        "priceMin" : 30
+      },
+      {
+        "category" : "grocery",
+        "name" : "Молочка",
+        "priceMax" : 150,
+        "priceMin" : 50
+      },
+      {
+        "category" : "snack",
+        "name" : "Снеки",
+        "priceMax" : 150,
+        "priceMin" : 50
+      },
+      {
+        "category" : "drink",
+        "name" : "Напитки",
+        "priceMax" : 100,
+        "priceMin" : 30
+      }
+    ],
+    "name" : "Наш Гастроном",
+    "priceLevel" : "medium",
+    "schedule" : {
+      "note" : "Круглосуточно"
+    }
   },
   {
-    "id": "pilada",
-    "name": "Пилада",
-    "category": "shop",
-    "address": "Московский тракт, 11Б",
-    "description": "Легендарный студенческий магазин. Небольшой, у прилавка. Выручает ночью когда всё закрыто.",
-    "schedule": { "note": "Круглосуточно" },
-    "priceLevel": "low",
-    "rating": null,
-    "latitude": 56.46700,
-    "longitude": 84.94300,
-    "menu": [
-      { "name": "Хлеб",        "category": "grocery", "priceMin": 30,  "priceMax": 60 },
-      { "name": "Молоко",      "category": "grocery", "priceMin": 50,  "priceMax": 100 },
-      { "name": "Консервы",    "category": "grocery", "priceMin": 60,  "priceMax": 150 },
-      { "name": "Снеки",       "category": "snack",   "priceMin": 40,  "priceMax": 120 },
-      { "name": "Напитки",     "category": "drink",   "priceMin": 30,  "priceMax": 100 }
-    ]
+    "address" : "Московский тракт, 11Б",
+    "category" : "shop",
+    "description" : "Легендарный студенческий магазин. Небольшой, у прилавка. Выручает ночью когда всё закрыто.",
+    "id" : "pilada",
+    "latitude" : 56.467,
+    "longitude" : 84.943,
+    "menu" : [
+      {
+        "category" : "grocery",
+        "name" : "Хлеб",
+        "priceMax" : 60,
+        "priceMin" : 30
+      },
+      {
+        "category" : "grocery",
+        "name" : "Молоко",
+        "priceMax" : 100,
+        "priceMin" : 50
+      },
+      {
+        "category" : "grocery",
+        "name" : "Консервы",
+        "priceMax" : 150,
+        "priceMin" : 60
+      },
+      {
+        "category" : "snack",
+        "name" : "Снеки",
+        "priceMax" : 120,
+        "priceMin" : 40
+      },
+      {
+        "category" : "drink",
+        "name" : "Напитки",
+        "priceMax" : 100,
+        "priceMin" : 30
+      }
+    ],
+    "name" : "Пилада",
+    "priceLevel" : "low",
+    "schedule" : {
+      "note" : "Круглосуточно"
+    }
   }
 ]

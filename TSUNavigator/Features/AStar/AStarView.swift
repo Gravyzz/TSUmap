@@ -4,7 +4,6 @@ import Combine
 
 enum EditMode { case navigate, addBarrier }
 
-
 @MainActor
 final class LocationManager: NSObject, ObservableObject {
     private let manager = CLLocationManager()
@@ -195,7 +194,6 @@ struct AStarView: View {
         }
     }
 
-
     var statusBar: some View {
         Group {
             if isRunning {
@@ -219,7 +217,6 @@ struct AStarView: View {
             }
         }
     }
-
 
     var controlButtons: some View {
         Group {

@@ -1,6 +1,5 @@
 import Foundation
 
-
 enum PlaceFeature: String, CaseIterable, Identifiable {
     case budget
     case hotFood
@@ -67,7 +66,6 @@ enum PlaceFeature: String, CaseIterable, Identifiable {
     }
 }
 
-
 final class DecisionTreeNode: Identifiable {
     let id = UUID()
     let entropy: Double
@@ -111,7 +109,6 @@ final class DecisionTreeNode: Identifiable {
     }
 }
 
-
 struct TreeBuildStep: Identifiable {
     let id = UUID()
     let depth: Int
@@ -121,7 +118,6 @@ struct TreeBuildStep: Identifiable {
     let chosen: PlaceFeature?
     let description: String
 }
-
 
 final class DecisionTreeBuilder {
     private(set) var buildSteps: [TreeBuildStep] = []
@@ -141,7 +137,6 @@ final class DecisionTreeBuilder {
                        features: [PlaceFeature],
                        depth: Int) -> DecisionTreeNode {
         let ent = entropy(places)
-
 
         if places.count <= minSamplesLeaf || features.isEmpty || ent < 0.001 {
             buildSteps.append(TreeBuildStep(
@@ -176,7 +171,6 @@ final class DecisionTreeBuilder {
         let groups = Dictionary(grouping: places) { best.0.extract(from: $0) }
         let remaining = features.filter { $0 != best.0 }
 
-
         let orderedKeys = best.0.possibleAnswers.filter { groups[$0] != nil }
         let children: [(String, DecisionTreeNode)] = orderedKeys.map { key in
             let child = build(places: groups[key]!, features: remaining, depth: depth + 1)
@@ -190,7 +184,6 @@ final class DecisionTreeBuilder {
         )
     }
 
-
     func entropy(_ places: [FoodPlace]) -> Double {
         guard !places.isEmpty else { return 0 }
         let groups = Dictionary(grouping: places) { $0.category.rawValue }
@@ -202,8 +195,6 @@ final class DecisionTreeBuilder {
         }
         return h
     }
-
-
 
     func informationGain(places: [FoodPlace], feature: PlaceFeature) -> Double {
         let totalH = entropy(places)

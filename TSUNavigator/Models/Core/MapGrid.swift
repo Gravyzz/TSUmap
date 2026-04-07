@@ -17,7 +17,7 @@ struct Cell: Hashable, Equatable, Sendable {
 }
 
 enum CellType: Sendable {
-    case road      
+    case road
     case grass
     case obstacle
     case building
@@ -27,7 +27,6 @@ enum CellType: Sendable {
     case path
     case visited
 }
-
 
 class MapGrid: ObservableObject {
     let rows: Int

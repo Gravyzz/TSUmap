@@ -66,7 +66,6 @@ struct AStarMapView: UIViewRepresentable {
         return scroll
     }
 
-
     func updateUIView(_ scroll: UIScrollView, context: Context) {
         context.coordinator.editMode    = editMode
         context.coordinator.model       = model
@@ -79,7 +78,6 @@ struct AStarMapView: UIViewRepresentable {
     func makeCoordinator() -> Coordinator {
         Coordinator(model: model, cellW: cellW, cellH: cellH)
     }
-
 
     final class Coordinator: NSObject, UIScrollViewDelegate {
 
@@ -135,7 +133,6 @@ struct AStarMapView: UIViewRepresentable {
                   col >= 0, col < model.cols else { return nil }
             return Cell(row: row, col: col)
         }
-
 
         @objc func handleTap(_ gesture: UITapGestureRecognizer) {
             guard gesture.state == .ended, editMode == .navigate else { return }
@@ -382,7 +379,6 @@ final class CanvasView: UIView {
         ctx.setLineWidth(1.5)
         ctx.stroke(boundingRect)
     }
-
 
     private func drawSmoothPath(ctx: CGContext, path: [Cell],
                                 cw: CGFloat, ch: CGFloat) {

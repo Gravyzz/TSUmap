@@ -11,55 +11,66 @@ private let clusterSwiftColors: [Color] = [
     .red, .blue, .green, .orange, .purple, .pink, .cyan, .brown
 ]
 
-
 final class ClusteringModel: ObservableObject {
     @Published var points: [ClusterPoint] = []
     @Published var result: KMeansResult?
+    @Published var comparison: MetricComparison?
 
     func addPoint(x: Double, y: Double) {
         points.append(ClusterPoint(x: x, y: y))
         result = nil
+        comparison = nil
     }
 
     func removeLastPoint() {
         guard !points.isEmpty else { return }
         points.removeLast()
         result = nil
+        comparison = nil
     }
 
     func clearAll() {
         points.removeAll()
         result = nil
+        comparison = nil
     }
 }
-
 
 struct ClusteringView: View {
     let places: [FoodPlace]
 
     @StateObject private var clusterModel = ClusteringModel()
     @State private var k = 3
-    @State private var mode = 0
-    @State private var elbowData: [(k: Int, wcss: Double)] = []
 
     private let algo = KMeansAlgorithm()
 
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
-                Picker("Режим", selection: $mode) {
-                    Text("Карта").tag(0)
-                    Text("Шаги").tag(1)
-                    Text("Локоть").tag(2)
-                }
-                .pickerStyle(.segmented)
-                .padding(.horizontal)
-                .padding(.top, 8)
+                hintBar
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
 
-                switch mode {
-                case 0:  mapTab
-                case 1:  stepsTab
-                default: elbowTab
+                kSlider
+                    .padding(.horizontal, 12)
+                    .padding(.bottom, 6)
+
+                ClusterMapUIView(clusterModel: clusterModel)
+                    .ignoresSafeArea(edges: .horizontal)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+                controlButtons
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+
+                if let cmp = clusterModel.comparison {
+                    comparisonLegend(cmp: cmp)
+                        .padding(.horizontal, 12)
+                        .padding(.bottom, 6)
+                } else if let result = clusterModel.result {
+                    simpleLegend(result: result)
+                        .padding(.horizontal, 12)
+                        .padding(.bottom, 6)
                 }
             }
             .navigationTitle("Кластеризация")
@@ -67,50 +78,38 @@ struct ClusteringView: View {
         }
     }
 
-    private var mapTab: some View {
-        VStack(spacing: 0) {
-            hintBar
-                .padding(.horizontal, 12)
-                .padding(.vertical, 6)
-
-            kSlider
-                .padding(.horizontal, 12)
-                .padding(.bottom, 6)
-
-            ClusterMapUIView(clusterModel: clusterModel)
-                .ignoresSafeArea(edges: .horizontal)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-
-            controlButtons
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
-
-            if let result = clusterModel.result {
-                legendBar(result: result)
-                    .padding(.horizontal, 12)
-                    .padding(.bottom, 6)
-            }
+    private var hintBar: some View {
+        HStack(spacing: 6) {
+            Image(systemName: statusIcon)
+                .foregroundColor(statusColor)
+            Text(statusText)
+                .font(.caption)
+                .foregroundColor(clusterModel.result != nil ? .primary : .secondary)
+            Spacer()
         }
     }
 
-    private var hintBar: some View {
-        HStack(spacing: 6) {
-            Image(systemName: clusterModel.result != nil ? "checkmark.circle.fill" : "hand.tap")
-                .foregroundColor(clusterModel.result != nil ? .green : .blue)
-            if clusterModel.points.isEmpty {
-                Text("Нажимайте на карту, чтобы расставить точки")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            } else if clusterModel.result != nil {
-                Text("Точек: \(clusterModel.points.count) · K=\(clusterModel.result!.k) · Итераций: \(clusterModel.result!.iterations)")
-                    .font(.caption)
-            } else {
-                Text("Точек: \(clusterModel.points.count) — нажмите «Кластеризовать»")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-            Spacer()
+    private var statusIcon: String {
+        if clusterModel.comparison != nil { return "arrow.triangle.branch" }
+        if clusterModel.result != nil { return "checkmark.circle.fill" }
+        return "hand.tap"
+    }
+    private var statusColor: Color {
+        if clusterModel.comparison != nil { return .purple }
+        if clusterModel.result != nil { return .green }
+        return .blue
+    }
+    private var statusText: String {
+        if let cmp = clusterModel.comparison {
+            return "Сравнение метрик · Конфликтов: \(cmp.conflictIndices.count) из \(clusterModel.points.count)"
         }
+        if let r = clusterModel.result {
+            return "Точек: \(clusterModel.points.count) · K=\(r.k) · \(r.metric.rawValue)"
+        }
+        if clusterModel.points.isEmpty {
+            return "Нажимайте на карту, чтобы расставить точки"
+        }
+        return "Точек: \(clusterModel.points.count) — нажмите кнопку"
     }
 
     private var kSlider: some View {
@@ -126,45 +125,80 @@ struct ClusteringView: View {
     }
 
     private var controlButtons: some View {
-        HStack(spacing: 10) {
-            Button {
-                runClustering()
-            } label: {
-                Label("Кластеризовать", systemImage: "sparkles")
-                    .font(.subheadline.bold())
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 10)
-                    .background(canRun ? Color.blue : Color.gray.opacity(0.3))
-                    .foregroundColor(.white)
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
-            }
-            .disabled(!canRun)
+        VStack(spacing: 8) {
 
-            Button {
-                clusterModel.removeLastPoint()
-            } label: {
-                Image(systemName: "arrow.uturn.backward")
-                    .font(.subheadline.bold())
-                    .padding(.vertical, 10)
-                    .padding(.horizontal, 14)
-                    .background(Color(.systemGray5))
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
-            }
-            .disabled(clusterModel.points.isEmpty)
+            HStack(spacing: 8) {
+                Button {
+                    clusterModel.comparison = nil
+                    clusterModel.result = algo.run(points: clusterModel.points, k: k, metric: .euclidean)
+                } label: {
+                    Text("Евклидово")
+                        .font(.subheadline.bold())
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 10)
+                        .background(canRun ? Color.blue : Color.gray.opacity(0.3))
+                        .foregroundColor(.white)
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                }
+                .disabled(!canRun)
 
-            Button {
-                clusterModel.clearAll()
-                elbowData = []
-            } label: {
-                Image(systemName: "trash")
-                    .font(.subheadline.bold())
-                    .padding(.vertical, 10)
-                    .padding(.horizontal, 14)
-                    .background(Color(.systemGray5))
-                    .foregroundColor(.red)
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                Button {
+                    clusterModel.comparison = nil
+                    clusterModel.result = algo.run(points: clusterModel.points, k: k, metric: .manhattan)
+                } label: {
+                    Text("Манхэттен")
+                        .font(.subheadline.bold())
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 10)
+                        .background(canRun ? Color.orange : Color.gray.opacity(0.3))
+                        .foregroundColor(.white)
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                }
+                .disabled(!canRun)
             }
-            .disabled(clusterModel.points.isEmpty)
+
+            HStack(spacing: 8) {
+
+                Button {
+                    let cmp = algo.compare(points: clusterModel.points, k: k)
+                    clusterModel.result = cmp.euclidean
+                    clusterModel.comparison = cmp
+                } label: {
+                    Label("Сравнить метрики", systemImage: "arrow.triangle.branch")
+                        .font(.subheadline.bold())
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 10)
+                        .background(canRun ? Color.purple : Color.gray.opacity(0.3))
+                        .foregroundColor(.white)
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                }
+                .disabled(!canRun)
+
+                Button {
+                    clusterModel.removeLastPoint()
+                } label: {
+                    Image(systemName: "arrow.uturn.backward")
+                        .font(.subheadline.bold())
+                        .padding(.vertical, 10)
+                        .padding(.horizontal, 12)
+                        .background(Color(.systemGray5))
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                }
+                .disabled(clusterModel.points.isEmpty)
+
+                Button {
+                    clusterModel.clearAll()
+                } label: {
+                    Image(systemName: "trash")
+                        .font(.subheadline.bold())
+                        .padding(.vertical, 10)
+                        .padding(.horizontal, 12)
+                        .background(Color(.systemGray5))
+                        .foregroundColor(.red)
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                }
+                .disabled(clusterModel.points.isEmpty)
+            }
         }
     }
 
@@ -172,26 +206,28 @@ struct ClusteringView: View {
         clusterModel.points.count >= k
     }
 
-    private func legendBar(result: KMeansResult) -> some View {
+    private func simpleLegend(result: KMeansResult) -> some View {
         VStack(alignment: .leading, spacing: 3) {
+            HStack {
+                Text("Метрика: \(result.metric.rawValue)")
+                    .font(.caption.bold())
+                Spacer()
+                Text("Итераций: \(result.iterations)")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
             let groups = Dictionary(grouping: result.points.filter { $0.cluster >= 0 }) { $0.cluster }
-            ForEach(groups.keys.sorted(), id: \.self) { clusterIdx in
+            ForEach(groups.keys.sorted(), id: \.self) { idx in
                 HStack(spacing: 6) {
                     Circle()
-                        .fill(clusterSwiftColors[clusterIdx % clusterSwiftColors.count])
+                        .fill(clusterSwiftColors[idx % clusterSwiftColors.count])
                         .frame(width: 10, height: 10)
-                    Text("Кластер \(clusterIdx + 1)")
+                    Text("Кластер \(idx + 1)")
                         .font(.caption.bold())
-                    Text("\(groups[clusterIdx]?.count ?? 0) точек")
+                    Text("\(groups[idx]?.count ?? 0) точек")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
-            }
-            HStack {
-                Spacer()
-                Text("WCSS: \(String(format: "%.1f", result.wcss))")
-                    .font(.system(size: 10, design: .monospaced))
-                    .foregroundColor(.secondary)
             }
         }
         .padding(8)
@@ -199,116 +235,50 @@ struct ClusteringView: View {
         .clipShape(RoundedRectangle(cornerRadius: 10))
     }
 
-
-    private var stepsTab: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 12) {
-                theoryCard
-
-                if let result = clusterModel.result {
-                    ForEach(result.steps) { step in
-                        StepCard(step: step)
-                    }
-                } else {
-                    Text("Сначала расставьте точки и запустите кластеризацию")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                        .padding()
+    private func comparisonLegend(cmp: MetricComparison) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            if cmp.conflicts.isEmpty {
+                HStack(spacing: 6) {
+                    Image(systemName: "checkmark.circle.fill")
+                        .foregroundColor(.green)
+                    Text("Обе метрики дали одинаковый результат!")
+                        .font(.caption.bold())
                 }
-            }
-            .padding()
-        }
-    }
-
-    private var theoryCard: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Label("Алгоритм K-Means", systemImage: "graduationcap")
-                .font(.headline)
-            Text("Итеративный алгоритм кластеризации. Разбивает N точек на K групп, минимизируя суммарное расстояние до центроидов.")
-                .font(.caption)
-                .foregroundColor(.secondary)
-
-            FormulaBlock(title: "Цель:",
-                         text: "min WCSS = \u{2211}\u{1D62} \u{2211}(x\u{2208}C\u{1D62}) ||x - \u{03BC}\u{1D62}||\u{00B2}")
-            FormulaBlock(title: "Шаги:",
-                         text: "1. Инициализация K центроидов (K-Means++)\n2. Назначение точек → ближайший центроид\n3. Пересчёт центроидов = среднее кластера\n4. Повторять 2-3 до сходимости")
-        }
-        .padding(12)
-        .background(Color(.systemGray6))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
-    }
-
-    private var elbowTab: some View {
-        VStack(spacing: 12) {
-            VStack(alignment: .leading, spacing: 6) {
-                Label("Метод локтя", systemImage: "chart.xyaxis.line")
-                    .font(.headline)
-                Text("WCSS для разных K. Оптимальное K — в точке «изгиба».")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-            .padding(.horizontal)
-            .padding(.top, 8)
-
-            if clusterModel.points.count < 2 {
-                Spacer()
-                Text("Сначала расставьте минимум 2 точки на карте")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                Spacer()
-            } else if elbowData.isEmpty {
-                Spacer()
-                Button {
-                    elbowData = algo.elbowData(points: clusterModel.points,
-                                                maxK: min(7, clusterModel.points.count))
-                } label: {
-                    Label("Рассчитать", systemImage: "play.fill")
-                        .font(.body.bold())
-                        .padding()
-                        .frame(maxWidth: .infinity)
-                        .background(Color.blue)
-                        .foregroundColor(.white)
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
-                }
-                .padding(.horizontal)
-                Spacer()
             } else {
-                ElbowChartView(data: elbowData)
-                    .frame(height: 200)
-                    .padding(.horizontal)
+                HStack(spacing: 6) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundColor(.yellow)
+                    Text("\(cmp.conflicts.count) точек попали в разные кластеры")
+                        .font(.caption.bold())
+                }
 
-                VStack(spacing: 2) {
-                    HStack {
-                        Text("K").font(.caption.bold()).frame(width: 30)
-                        Text("WCSS").font(.caption.bold())
-                        Spacer()
-                    }
-                    ForEach(elbowData, id: \.k) { item in
-                        HStack {
-                            Text("\(item.k)").font(.caption).frame(width: 30)
-                            Text(String(format: "%.1f", item.wcss))
-                                .font(.system(size: 10, design: .monospaced))
-                            Spacer()
-                        }
+                ForEach(cmp.conflicts, id: \.index) { c in
+                    HStack(spacing: 4) {
+                        Text("Точка \(c.index + 1):")
+                            .font(.caption2)
+                        Circle()
+                            .fill(clusterSwiftColors[c.eucCluster % clusterSwiftColors.count])
+                            .frame(width: 8, height: 8)
+                        Text("Евкл. → \(c.eucCluster + 1)")
+                            .font(.caption2)
+                        Circle()
+                            .fill(clusterSwiftColors[c.manCluster % clusterSwiftColors.count])
+                            .frame(width: 8, height: 8)
+                        Text("Манх. → \(c.manCluster + 1)")
+                            .font(.caption2)
                     }
                 }
-                .padding(10)
-                .background(Color(.systemGray6))
-                .clipShape(RoundedRectangle(cornerRadius: 10))
-                .padding(.horizontal)
-                Spacer()
+
+                Text("Конфликтные точки обведены пунктиром на карте")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
             }
         }
-    }
-
-
-    private func runClustering() {
-        guard canRun else { return }
-        clusterModel.result = algo.run(points: clusterModel.points, k: k)
-        elbowData = []
+        .padding(8)
+        .background(Color(.systemGray6))
+        .clipShape(RoundedRectangle(cornerRadius: 10))
     }
 }
-
 
 private struct ClusterMapUIView: UIViewRepresentable {
     @ObservedObject var clusterModel: ClusteringModel
@@ -371,7 +341,6 @@ private struct ClusterMapUIView: UIViewRepresentable {
 
     final class Coordinator: NSObject, UIScrollViewDelegate {
         var clusterModel: ClusteringModel
-
         weak var canvas: ClusterCanvas?
         weak var container: UIView?
 
@@ -383,11 +352,9 @@ private struct ClusterMapUIView: UIViewRepresentable {
 
         func scrollViewDidZoom(_ scrollView: UIScrollView) {
             guard let c = container else { return }
-            let offsetX = max((scrollView.bounds.width  - c.frame.width)  / 2, 0)
-            let offsetY = max((scrollView.bounds.height - c.frame.height) / 2, 0)
-            scrollView.contentInset = UIEdgeInsets(
-                top: offsetY, left: offsetX, bottom: offsetY, right: offsetX
-            )
+            let ox = max((scrollView.bounds.width  - c.frame.width)  / 2, 0)
+            let oy = max((scrollView.bounds.height - c.frame.height) / 2, 0)
+            scrollView.contentInset = UIEdgeInsets(top: oy, left: ox, bottom: oy, right: ox)
         }
 
         func fitMap(in scroll: UIScrollView) {
@@ -402,13 +369,11 @@ private struct ClusterMapUIView: UIViewRepresentable {
         @objc func handleTap(_ gesture: UITapGestureRecognizer) {
             guard gesture.state == .ended else { return }
             let pt = gesture.location(in: canvas)
-            // Добавляем точку в пиксельных координатах карты
             clusterModel.addPoint(x: pt.x, y: pt.y)
             canvas?.setNeedsDisplay()
         }
     }
 }
-
 
 private final class ClusterCanvas: UIView {
     weak var coordinator: ClusterMapUIView.Coordinator?
@@ -418,10 +383,11 @@ private final class ClusterCanvas: UIView {
               let coord = coordinator else { return }
 
         let model = coord.clusterModel
-        let result = model.result
 
-        if let result = result {
-            drawClustered(ctx: ctx, result: result)
+        if let cmp = model.comparison {
+            drawComparison(ctx: ctx, cmp: cmp)
+        } else if let result = model.result {
+            drawClustered(ctx: ctx, result: result, conflicts: nil)
         } else {
             drawUnclustered(ctx: ctx, points: model.points)
         }
@@ -429,57 +395,31 @@ private final class ClusterCanvas: UIView {
 
     private func drawUnclustered(ctx: CGContext, points: [ClusterPoint]) {
         for (i, p) in points.enumerated() {
-            let r: CGFloat = 6
-
-            ctx.saveGState()
-            ctx.setShadow(offset: CGSize(width: 0, height: 1), blur: 2,
-                          color: UIColor.black.withAlphaComponent(0.3).cgColor)
-            ctx.setFillColor(UIColor.systemGray.cgColor)
-            ctx.fillEllipse(in: CGRect(x: p.x - r, y: p.y - r,
-                                       width: r * 2, height: r * 2))
-            ctx.restoreGState()
-
-            ctx.setStrokeColor(UIColor.white.cgColor)
-            ctx.setLineWidth(1.5)
-            ctx.strokeEllipse(in: CGRect(x: p.x - r, y: p.y - r,
-                                         width: r * 2, height: r * 2))
-
-            let font = UIFont.systemFont(ofSize: 7, weight: .bold)
-            let attrs: [NSAttributedString.Key: Any] = [
-                .font: font, .foregroundColor: UIColor.white
-            ]
-            let label = "\(i + 1)" as NSString
-            let sz = label.size(withAttributes: attrs)
-            label.draw(at: CGPoint(x: p.x - sz.width / 2,
-                                   y: p.y - sz.height / 2),
-                       withAttributes: attrs)
+            drawDot(ctx: ctx, x: p.x, y: p.y, color: .systemGray, radius: 6)
+            drawLabel(ctx: ctx, text: "\(i + 1)",
+                      at: CGPoint(x: p.x, y: p.y), color: .white, fontSize: 7)
         }
     }
 
-    private func drawClustered(ctx: CGContext, result: KMeansResult) {
+    private func drawClustered(ctx: CGContext, result: KMeansResult,
+                                conflicts: Set<Int>?) {
         let points = result.points
         let centroids = result.centroids
 
-        for (clusterIdx, _) in centroids.enumerated() {
-            let color = clusterUIColors[clusterIdx % clusterUIColors.count]
+        for ci in 0..<centroids.count {
+            let color = clusterUIColors[ci % clusterUIColors.count]
             ctx.setFillColor(color.withAlphaComponent(0.08).cgColor)
-
-            let members = points.filter { $0.cluster == clusterIdx }
-            for p in members {
-                let radius: CGFloat = 30
-                ctx.fillEllipse(in: CGRect(x: p.x - radius, y: p.y - radius,
-                                           width: radius * 2, height: radius * 2))
+            for p in points where p.cluster == ci {
+                ctx.fillEllipse(in: CGRect(x: p.x - 30, y: p.y - 30, width: 60, height: 60))
             }
         }
 
-        for (clusterIdx, centroid) in centroids.enumerated() {
-            let color = clusterUIColors[clusterIdx % clusterUIColors.count]
+        for (ci, centroid) in centroids.enumerated() {
+            let color = clusterUIColors[ci % clusterUIColors.count]
             ctx.setStrokeColor(color.withAlphaComponent(0.35).cgColor)
             ctx.setLineWidth(1.0)
             ctx.setLineDash(phase: 0, lengths: [3, 3])
-
-            let members = points.filter { $0.cluster == clusterIdx }
-            for p in members {
+            for p in points where p.cluster == ci {
                 ctx.move(to: CGPoint(x: p.x, y: p.y))
                 ctx.addLine(to: CGPoint(x: centroid.x, y: centroid.y))
             }
@@ -487,168 +427,102 @@ private final class ClusterCanvas: UIView {
             ctx.setLineDash(phase: 0, lengths: [])
         }
 
-        for p in points {
-            guard p.cluster >= 0 else { continue }
+        for (i, p) in points.enumerated() where p.cluster >= 0 {
             let color = clusterUIColors[p.cluster % clusterUIColors.count]
-            let r: CGFloat = 6
+            drawDot(ctx: ctx, x: p.x, y: p.y, color: color, radius: 6)
 
-            ctx.saveGState()
-            ctx.setShadow(offset: CGSize(width: 0, height: 1), blur: 2,
-                          color: UIColor.black.withAlphaComponent(0.3).cgColor)
-            ctx.setFillColor(color.cgColor)
-            ctx.fillEllipse(in: CGRect(x: p.x - r, y: p.y - r,
-                                       width: r * 2, height: r * 2))
-            ctx.restoreGState()
-
-            ctx.setStrokeColor(UIColor.white.cgColor)
-            ctx.setLineWidth(1.5)
-            ctx.strokeEllipse(in: CGRect(x: p.x - r, y: p.y - r,
-                                         width: r * 2, height: r * 2))
+            if let conflicts = conflicts, conflicts.contains(i) {
+                ctx.setStrokeColor(UIColor.systemYellow.cgColor)
+                ctx.setLineWidth(2.5)
+                ctx.setLineDash(phase: 0, lengths: [3, 2])
+                ctx.strokeEllipse(in: CGRect(x: p.x - 10, y: p.y - 10, width: 20, height: 20))
+                ctx.setLineDash(phase: 0, lengths: [])
+            }
         }
 
         for (i, c) in centroids.enumerated() {
-            let color = clusterUIColors[i % clusterUIColors.count]
-            let s: CGFloat = 9
+            drawCentroid(ctx: ctx, x: c.x, y: c.y,
+                         color: clusterUIColors[i % clusterUIColors.count])
+        }
+    }
+
+    private func drawComparison(ctx: CGContext, cmp: MetricComparison) {
+
+        drawClustered(ctx: ctx, result: cmp.euclidean, conflicts: cmp.conflictIndices)
+
+        for conflict in cmp.conflicts {
+            let p = cmp.euclidean.points[conflict.index]
+            let manColor = clusterUIColors[conflict.manCluster % clusterUIColors.count]
+
+            let offsetX: CGFloat = 10
+            let offsetY: CGFloat = -10
+            let sr: CGFloat = 4
 
             ctx.saveGState()
-            ctx.setShadow(offset: CGSize(width: 0, height: 1), blur: 3,
-                          color: UIColor.black.withAlphaComponent(0.4).cgColor)
-            ctx.setFillColor(UIColor.white.cgColor)
-            ctx.fillEllipse(in: CGRect(x: c.x - s, y: c.y - s,
-                                       width: s * 2, height: s * 2))
+            ctx.setShadow(offset: CGSize(width: 0, height: 0.5), blur: 1,
+                          color: UIColor.black.withAlphaComponent(0.3).cgColor)
+            ctx.setFillColor(manColor.cgColor)
+            ctx.fillEllipse(in: CGRect(x: p.x + offsetX - sr, y: p.y + offsetY - sr,
+                                       width: sr * 2, height: sr * 2))
             ctx.restoreGState()
 
-            ctx.setStrokeColor(color.cgColor)
-            ctx.setLineWidth(2.5)
-            let d: CGFloat = s * 0.5
-            ctx.move(to: CGPoint(x: c.x - d, y: c.y - d))
-            ctx.addLine(to: CGPoint(x: c.x + d, y: c.y + d))
-            ctx.move(to: CGPoint(x: c.x + d, y: c.y - d))
-            ctx.addLine(to: CGPoint(x: c.x - d, y: c.y + d))
-            ctx.strokePath()
+            ctx.setStrokeColor(UIColor.white.cgColor)
+            ctx.setLineWidth(1.0)
+            ctx.strokeEllipse(in: CGRect(x: p.x + offsetX - sr, y: p.y + offsetY - sr,
+                                         width: sr * 2, height: sr * 2))
+
+            let font = UIFont.systemFont(ofSize: 5, weight: .bold)
+            let attrs: [NSAttributedString.Key: Any] = [.font: font, .foregroundColor: UIColor.white]
+            let str = "M" as NSString
+            let sz = str.size(withAttributes: attrs)
+            str.draw(at: CGPoint(x: p.x + offsetX - sz.width / 2,
+                                 y: p.y + offsetY - sz.height / 2),
+                     withAttributes: attrs)
         }
     }
-}
 
-private struct StepCard: View {
-    let step: KMeansStep
+    private func drawDot(ctx: CGContext, x: Double, y: Double,
+                         color: UIColor, radius: CGFloat) {
+        let r = radius
+        ctx.saveGState()
+        ctx.setShadow(offset: CGSize(width: 0, height: 1), blur: 2,
+                      color: UIColor.black.withAlphaComponent(0.3).cgColor)
+        ctx.setFillColor(color.cgColor)
+        ctx.fillEllipse(in: CGRect(x: x - r, y: y - r, width: r * 2, height: r * 2))
+        ctx.restoreGState()
 
-    var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack {
-                Text(step.phase.rawValue)
-                    .font(.caption.bold())
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 3)
-                    .background(phaseColor.opacity(0.2))
-                    .foregroundColor(phaseColor)
-                    .clipShape(Capsule())
-
-                if step.iteration > 0 {
-                    Text("Итерация \(step.iteration)")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                }
-                Spacer()
-            }
-
-            Text(step.description)
-                .font(.caption)
-
-            if step.phase == .assign || step.phase == .converged {
-                let groups = Dictionary(grouping: step.points.filter { $0.cluster >= 0 }) { $0.cluster }
-                HStack(spacing: 12) {
-                    ForEach(groups.keys.sorted(), id: \.self) { cl in
-                        HStack(spacing: 3) {
-                            Circle()
-                                .fill(clusterSwiftColors[cl % clusterSwiftColors.count])
-                                .frame(width: 8, height: 8)
-                            Text("\(groups[cl]?.count ?? 0)")
-                                .font(.caption2.bold())
-                        }
-                    }
-                }
-            }
-        }
-        .padding(10)
-        .background(Color(.systemGray6))
-        .clipShape(RoundedRectangle(cornerRadius: 10))
+        ctx.setStrokeColor(UIColor.white.cgColor)
+        ctx.setLineWidth(1.5)
+        ctx.strokeEllipse(in: CGRect(x: x - r, y: y - r, width: r * 2, height: r * 2))
     }
 
-    private var phaseColor: Color {
-        switch step.phase {
-        case .initial:   return .purple
-        case .assign:    return .blue
-        case .update:    return .orange
-        case .converged: return .green
-        }
+    private func drawCentroid(ctx: CGContext, x: Double, y: Double, color: UIColor) {
+        let s: CGFloat = 9
+        ctx.saveGState()
+        ctx.setShadow(offset: CGSize(width: 0, height: 1), blur: 3,
+                      color: UIColor.black.withAlphaComponent(0.4).cgColor)
+        ctx.setFillColor(UIColor.white.cgColor)
+        ctx.fillEllipse(in: CGRect(x: x - s, y: y - s, width: s * 2, height: s * 2))
+        ctx.restoreGState()
+
+        ctx.setStrokeColor(color.cgColor)
+        ctx.setLineWidth(2.5)
+        let d: CGFloat = s * 0.5
+        ctx.move(to: CGPoint(x: x - d, y: y - d))
+        ctx.addLine(to: CGPoint(x: x + d, y: y + d))
+        ctx.move(to: CGPoint(x: x + d, y: y - d))
+        ctx.addLine(to: CGPoint(x: x - d, y: y + d))
+        ctx.strokePath()
     }
-}
 
-
-private struct ElbowChartView: View {
-    let data: [(k: Int, wcss: Double)]
-
-    var body: some View {
-        GeometryReader { geo in
-            let w = geo.size.width
-            let h = geo.size.height
-            let pad: CGFloat = 40
-            let maxWCSS = data.map(\.wcss).max() ?? 1
-            let minK = data.map(\.k).min() ?? 1
-            let maxK = data.map(\.k).max() ?? 8
-
-            Canvas { ctx, _ in
-                var axis = Path()
-                axis.move(to: CGPoint(x: pad, y: pad / 2))
-                axis.addLine(to: CGPoint(x: pad, y: h - pad))
-                axis.addLine(to: CGPoint(x: w - 10, y: h - pad))
-                ctx.stroke(axis, with: .color(.secondary), lineWidth: 1)
-
-                let pts: [CGPoint] = data.map { item in
-                    let xp = pad + (CGFloat(item.k - minK) / CGFloat(max(1, maxK - minK))) * (w - pad - 10)
-                    let yp = (h - pad) - (item.wcss / maxWCSS) * (h - pad - pad / 2)
-                    return CGPoint(x: xp, y: yp)
-                }
-
-                if pts.count > 1 {
-                    var line = Path()
-                    line.move(to: pts[0])
-                    for p in pts.dropFirst() { line.addLine(to: p) }
-                    ctx.stroke(line, with: .color(.blue), lineWidth: 2)
-                }
-
-                for (i, p) in pts.enumerated() {
-                    ctx.fill(Circle().path(in: CGRect(x: p.x - 5, y: p.y - 5,
-                                                      width: 10, height: 10)),
-                             with: .color(.blue))
-                    ctx.draw(Text("\(data[i].k)").font(.system(size: 10)),
-                             at: CGPoint(x: p.x, y: h - pad + 14))
-                }
-
-                ctx.draw(Text("K").font(.caption.bold()), at: CGPoint(x: w / 2, y: h - 5))
-                ctx.draw(Text("WCSS").font(.caption.bold()), at: CGPoint(x: 14, y: h / 2))
-            }
-        }
-        .background(Color(.systemGray6))
-        .clipShape(RoundedRectangle(cornerRadius: 10))
-    }
-}
-
-private struct FormulaBlock: View {
-    let title: String
-    let text: String
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 2) {
-            Text(title).font(.caption.bold())
-            Text(text)
-                .font(.system(size: 11, design: .monospaced))
-                .padding(6)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color(.systemBackground))
-                .clipShape(RoundedRectangle(cornerRadius: 6))
-        }
+    private func drawLabel(ctx: CGContext, text: String, at pt: CGPoint,
+                           color: UIColor, fontSize: CGFloat) {
+        let font = UIFont.systemFont(ofSize: fontSize, weight: .bold)
+        let attrs: [NSAttributedString.Key: Any] = [.font: font, .foregroundColor: color]
+        let str = text as NSString
+        let sz = str.size(withAttributes: attrs)
+        str.draw(at: CGPoint(x: pt.x - sz.width / 2, y: pt.y - sz.height / 2),
+                 withAttributes: attrs)
     }
 }
 

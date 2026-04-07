@@ -148,7 +148,6 @@ final class AStarAlgorithm {
 
                 if closed[ni] { continue }
 
-
                 var moveCost = dir.cost
                 if snapshot.grid[nr][nc] == .grass {
                     moveCost *= 1.5

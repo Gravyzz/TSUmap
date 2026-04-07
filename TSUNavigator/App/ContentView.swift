@@ -43,13 +43,13 @@ struct ContentView: View {
                     Label("Кафе", systemImage: "fork.knife")
                 }
 
-            GeneticView()
+            GeneticView(places: places, gridCols: mapModel.cols, gridRows: mapModel.rows)
                 .tag(Tab.lunch)
                 .tabItem {
                     Label("Обед", systemImage: "bag")
                 }
 
-            AntView()
+            AntView(places: places, gridCols: mapModel.cols, gridRows: mapModel.rows)
                 .tag(Tab.walk)
                 .tabItem {
                     Label("Прогулка", systemImage: "figure.walk")

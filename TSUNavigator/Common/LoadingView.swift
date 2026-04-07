@@ -20,7 +20,7 @@ struct LoadingView: View {
                     .font(Font.title)
                     .fontWeight(Font.Weight.bold)
                 Spacer()
-                    
+
             }
         }
     }
