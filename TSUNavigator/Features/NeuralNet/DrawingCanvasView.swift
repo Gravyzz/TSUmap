@@ -53,12 +53,19 @@ final class PixelCanvasView: UIView {
     private var pixels = Array(repeating: Array(repeating: false, count: 50), count: 50)
     private var previousCell: CGPoint?
 
+    private var blockingPan: UIPanGestureRecognizer!
+
     override init(frame: CGRect) {
         super.init(frame: frame)
         backgroundColor = .white
         isMultipleTouchEnabled = false
         contentMode = .redraw
         isExclusiveTouch = true
+
+        blockingPan = UIPanGestureRecognizer(target: nil, action: nil)
+        blockingPan.cancelsTouchesInView = false
+        blockingPan.delaysTouchesEnded = false
+        addGestureRecognizer(blockingPan)
     }
 
     required init?(coder: NSCoder) {
@@ -69,6 +76,13 @@ final class PixelCanvasView: UIView {
         super.layoutSubviews()
         layer.cornerRadius = 16
         layer.masksToBounds = true
+    }
+
+    override func didMoveToWindow() {
+        super.didMoveToWindow()
+        if let scroll = enclosingScrollView() {
+            scroll.panGestureRecognizer.require(toFail: blockingPan)
+        }
     }
 
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
