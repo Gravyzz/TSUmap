@@ -102,6 +102,7 @@ struct AStarView: View {
                 legendBar
                     .padding(.bottom, 8)
             }
+            .background(Color(.systemBackground))
             .navigationTitle("A* — Маршрут")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { toolbarContent }
@@ -246,8 +247,9 @@ struct AStarView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(12)
-        .background(Color(.systemGray6))
+        .background(Color(.systemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .shadow(color: .black.opacity(0.06), radius: 4, y: 2)
     }
 
     var selectedBuildingPlacesCard: some View {
@@ -281,8 +283,9 @@ struct AStarView: View {
             }
         }
         .padding(12)
-        .background(Color(.systemGray6))
+        .background(Color(.systemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .shadow(color: .black.opacity(0.06), radius: 4, y: 2)
     }
 
     func buildingPlaceRow(_ place: FoodPlace) -> some View {

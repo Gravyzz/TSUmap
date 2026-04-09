@@ -295,7 +295,7 @@ private struct ClusterMapUIView: UIViewRepresentable {
         scroll.showsVerticalScrollIndicator = false
         scroll.showsHorizontalScrollIndicator = false
         scroll.bouncesZoom = true
-        scroll.backgroundColor = UIColor(white: 0.93, alpha: 1)
+        scroll.backgroundColor = .white
 
         let container = UIView(frame: CGRect(origin: .zero, size: imgSize))
         context.coordinator.container = container
