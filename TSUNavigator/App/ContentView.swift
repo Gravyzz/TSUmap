@@ -52,7 +52,7 @@ struct ContentView: View {
                     Label("Кафе", systemImage: "fork.knife")
                 }
 
-            GeneticView(places: places, gridCols: mapModel.cols, gridRows: mapModel.rows)
+            GeneticView(places: places, mapModel: mapModel)
                 .tag(Tab.lunch)
                 .tabItem {
                     Label("Обед", systemImage: "bag")

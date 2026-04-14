@@ -8,24 +8,30 @@ final class GeneticModel: ObservableObject {
     @Published var result: GeneticResult?
     @Published var isRunning = false
     @Published var liveStep: GeneticStep?
+    @Published var statusMessage: String = ""
 
     @Published var populationSize: Double = 100
     @Published var generations: Double = 300
     @Published var mutationRate: Double = 0.20
 
     let allPlaces: [FoodPlace]
+    let mapModel: MapGridModel
     let gridCols: Int
     let gridRows: Int
     private let mapW: CGFloat = 838
     private let mapH: CGFloat = 686
 
-    var startX: Double { Double(mapW / 2) }
-    var startY: Double { Double(mapH / 2) }
+    @Published var startX: Double = 419
+    @Published var startY: Double = 343
+    @Published var startPlaced = false
 
-    init(places: [FoodPlace], gridCols: Int, gridRows: Int) {
+    var roadSegments: [String: [CGPoint]] = [:]
+
+    init(places: [FoodPlace], mapModel: MapGridModel) {
         self.allPlaces = places
-        self.gridCols = gridCols
-        self.gridRows = gridRows
+        self.mapModel = mapModel
+        self.gridCols = mapModel.cols
+        self.gridRows = mapModel.rows
     }
 
     var boundPlaces: [FoodPlace] {
@@ -79,6 +85,21 @@ final class GeneticModel: ObservableObject {
                        y: CGFloat(ref.row) * cellH + cellH / 2)
     }
 
+    func pixelToCell(_ pt: CGPoint) -> Cell {
+        let cellW = mapW / CGFloat(gridCols)
+        let cellH = mapH / CGFloat(gridRows)
+        let col = min(max(Int(pt.x / cellW), 0), gridCols - 1)
+        let row = min(max(Int(pt.y / cellH), 0), gridRows - 1)
+        return Cell(row: row, col: col)
+    }
+
+    func cellToPixel(_ cell: Cell) -> CGPoint {
+        let cellW = mapW / CGFloat(gridCols)
+        let cellH = mapH / CGFloat(gridRows)
+        return CGPoint(x: CGFloat(cell.col) * cellW + cellW / 2,
+                       y: CGFloat(cell.row) * cellH + cellH / 2)
+    }
+
     func toggleDish(_ dish: SelectedDish) {
         if selectedDishes.contains(dish) {
             selectedDishes.remove(dish)
@@ -87,12 +108,15 @@ final class GeneticModel: ObservableObject {
         }
         result = nil
         liveStep = nil
+        roadSegments = [:]
     }
 
     func clear() {
         selectedDishes = []
         result = nil
         liveStep = nil
+        roadSegments = [:]
+        startPlaced = false
     }
 
     func run() {
@@ -100,6 +124,7 @@ final class GeneticModel: ObservableObject {
         guard !cands.isEmpty else { return }
         isRunning = true
         liveStep = nil
+        roadSegments = [:]
 
         let dishNames = Set(selectedDishes.map(\.name))
         let popSize = Int(populationSize)
@@ -107,24 +132,120 @@ final class GeneticModel: ObservableObject {
         let mutRate = mutationRate
         let sx = startX
         let sy = startY
+        let snapshot = mapModel.snapshot(grassWalkable: true)
 
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            guard let self = self else { return }
+
+            DispatchQueue.main.async {
+                self.statusMessage = "Прокладка дорог A*..."
+            }
+
+            let (distMatrix, segments) = self.precomputeRoadPaths(
+                candidates: cands, startX: sx, startY: sy, snapshot: snapshot)
+
+            DispatchQueue.main.async {
+                self.roadSegments = segments
+                self.statusMessage = "Генетический алгоритм..."
+            }
+
             let algo = GeneticAlgorithm(populationSize: popSize, mutationRate: mutRate)
             let res = algo.run(
                 candidates: cands,
                 selectedDishes: dishNames,
                 startX: sx, startY: sy,
-                generations: gens
+                generations: gens,
+                externalDistMatrix: distMatrix
             ) { step in
                 DispatchQueue.main.async {
-                    self?.liveStep = step
+                    self.liveStep = step
                 }
             }
             DispatchQueue.main.async {
-                self?.result = res
-                self?.isRunning = false
+                self.result = res
+                self.isRunning = false
+                self.statusMessage = ""
             }
         }
+    }
+
+    private func precomputeRoadPaths(
+        candidates: [RouteCandidate],
+        startX: Double, startY: Double,
+        snapshot: GridSnapshot
+    ) -> ([[Double]], [String: [CGPoint]]) {
+
+        let algo = AStarAlgorithm()
+        let n = candidates.count + 1
+        var dist = Array(repeating: Array(repeating: 0.0, count: n), count: n)
+        var segments: [String: [CGPoint]] = [:]
+        let metersPerPixel = 7.3
+
+        let startPx = CGPoint(x: startX, y: startY)
+        let startCell = pixelToCell(startPx)
+        let walkableStart = findNearestWalkable(to: startCell, in: snapshot)
+
+        var walkableCells: [Cell] = [walkableStart]
+        for cand in candidates {
+            let candCell = pixelToCell(CGPoint(x: cand.x, y: cand.y))
+            let building = mapModel.floodFillBuilding(from: candCell)
+            if !building.isEmpty {
+                let edge = mapModel.nearestWalkableEdge(
+                    of: building, to: walkableStart, grassWalkable: true)
+                walkableCells.append(edge ?? findNearestWalkable(to: candCell, in: snapshot))
+            } else {
+                walkableCells.append(findNearestWalkable(to: candCell, in: snapshot))
+            }
+        }
+
+        for i in 0..<n {
+            for j in (i+1)..<n {
+                if let path = algo.findPath(in: snapshot, from: walkableCells[i], to: walkableCells[j]) {
+                    let pathLen = Double(path.count) * metersPerPixel *
+                        (Double(mapW) / Double(gridCols))
+                    let cellSize = mapModel.cellMeters
+                    let pathMeters = Double(path.count) * cellSize
+                    dist[i][j] = pathMeters
+                    dist[j][i] = pathMeters
+
+                    let step = max(1, path.count / 80)
+                    var pixelPath = stride(from: 0, to: path.count, by: step).map {
+                        cellToPixel(path[$0])
+                    }
+                    if let last = path.last {
+                        let lastPx = cellToPixel(last)
+                        if pixelPath.last != lastPx { pixelPath.append(lastPx) }
+                    }
+
+                    segments["\(i)-\(j)"] = pixelPath
+                    segments["\(j)-\(i)"] = pixelPath.reversed()
+                } else {
+                    let dx = Double(walkableCells[i].col - walkableCells[j].col)
+                    let dy = Double(walkableCells[i].row - walkableCells[j].row)
+                    let fallback = sqrt(dx*dx + dy*dy) * mapModel.cellMeters * 2.0
+                    dist[i][j] = fallback
+                    dist[j][i] = fallback
+                }
+            }
+        }
+
+        return (dist, segments)
+    }
+
+    private func findNearestWalkable(to cell: Cell, in snapshot: GridSnapshot) -> Cell {
+        if snapshot.isWalkable(row: cell.row, col: cell.col) { return cell }
+        for radius in 1...30 {
+            for dr in -radius...radius {
+                for dc in -radius...radius {
+                    guard abs(dr) == radius || abs(dc) == radius else { continue }
+                    let r = cell.row + dr, c = cell.col + dc
+                    if snapshot.isWalkable(row: r, col: c) {
+                        return Cell(row: r, col: c)
+                    }
+                }
+            }
+        }
+        return cell
     }
 
     private func minutesUntilClosing(place: FoodPlace) -> Double? {
@@ -141,7 +262,6 @@ final class GeneticModel: ObservableObject {
         }
 
         guard let schedule = timeStr else {
-
             if place.schedule.note?.lowercased().contains("круглосуточно") == true {
                 return nil
             }
@@ -172,23 +292,22 @@ final class GeneticModel: ObservableObject {
 
 private enum ViewStep {
     case selectDishes
+    case pickStart
     case results
 }
 
 struct GeneticView: View {
     let places: [FoodPlace]
-    let gridCols: Int
-    let gridRows: Int
+    let mapModel: MapGridModel
 
     @StateObject private var model: GeneticModel
     @State private var viewStep: ViewStep = .selectDishes
 
-    init(places: [FoodPlace], gridCols: Int = 711, gridRows: Int = 533) {
+    init(places: [FoodPlace], mapModel: MapGridModel) {
         self.places = places
-        self.gridCols = gridCols
-        self.gridRows = gridRows
+        self.mapModel = mapModel
         _model = StateObject(wrappedValue: GeneticModel(
-            places: places, gridCols: gridCols, gridRows: gridRows))
+            places: places, mapModel: mapModel))
     }
 
     var body: some View {
@@ -200,6 +319,9 @@ struct GeneticView: View {
                     switch viewStep {
                     case .selectDishes:
                         dishSelectionView
+
+                    case .pickStart:
+                        pickStartView
 
                     case .results:
                         resultsView
@@ -217,6 +339,12 @@ struct GeneticView: View {
                             model.liveStep = nil
                         }
                         .font(.caption)
+                    }
+                }
+                if viewStep == .pickStart {
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        Button("Назад") { viewStep = .selectDishes }
+                            .font(.caption)
                     }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -311,10 +439,9 @@ struct GeneticView: View {
                 .foregroundColor(.secondary)
 
                 Button {
-                    viewStep = .results
-                    model.run()
+                    viewStep = .pickStart
                 } label: {
-                    Text("Построить маршрут")
+                    Text("Выбрать стартовую точку")
                         .font(.body.bold())
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 12)
@@ -347,6 +474,38 @@ struct GeneticView: View {
         .buttonStyle(.plain)
     }
 
+    private var pickStartView: some View {
+        VStack(spacing: 0) {
+            HStack(spacing: 8) {
+                Image(systemName: model.startPlaced ? "checkmark.circle.fill" : "mappin.circle")
+                    .foregroundColor(model.startPlaced ? .green : .blue)
+                Text(model.startPlaced ? "Старт выбран — нажмите «Построить маршрут»" : "Нажмите на карту, чтобы указать, где вы находитесь")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+
+            StartPickerCanvasRepresentable(model: model)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+            Button {
+                viewStep = .results
+                model.run()
+            } label: {
+                Text("Построить маршрут")
+                    .font(.body.bold())
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .background(model.startPlaced ? Color.green : Color.gray)
+                    .foregroundColor(.white)
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+            }
+            .disabled(!model.startPlaced)
+            .padding(12)
+        }
+    }
+
     private var resultsView: some View {
         VStack(spacing: 0) {
 
@@ -376,7 +535,7 @@ struct GeneticView: View {
                         .font(.caption)
                         .foregroundColor(.secondary)
                 } else {
-                    Text("Запуск алгоритма...")
+                    Text(model.statusMessage.isEmpty ? "Запуск..." : model.statusMessage)
                         .font(.caption).foregroundColor(.secondary)
                 }
             } else if let r = model.result {
@@ -538,6 +697,160 @@ private struct FlowLayout: Layout {
     }
 }
 
+struct StartPickerCanvasRepresentable: UIViewRepresentable {
+    @ObservedObject var model: GeneticModel
+
+    private static let canvasSize = CGSize(width: 838, height: 686)
+
+    func makeUIView(context: Context) -> UIScrollView {
+        let imgSize = Self.canvasSize
+
+        let scroll = UIScrollView()
+        scroll.delegate = context.coordinator
+        scroll.minimumZoomScale = 0.4
+        scroll.maximumZoomScale = 8.0
+        scroll.showsVerticalScrollIndicator = false
+        scroll.showsHorizontalScrollIndicator = false
+        scroll.bouncesZoom = true
+        scroll.backgroundColor = .white
+
+        let container = UIView(frame: CGRect(origin: .zero, size: imgSize))
+        container.backgroundColor = .clear
+        context.coordinator.container = container
+
+        let mapImage = UIImage(named: "mapEatTSU") ?? UIImage()
+        let imageView = UIImageView(image: mapImage)
+        imageView.frame = CGRect(origin: .zero, size: imgSize)
+        imageView.contentMode = .scaleAspectFill
+        imageView.clipsToBounds = true
+        container.addSubview(imageView)
+
+        let overlay = StartPickerOverlay(frame: CGRect(origin: .zero, size: imgSize))
+        overlay.backgroundColor = .clear
+        overlay.isUserInteractionEnabled = true
+        overlay.coordinator = context.coordinator
+        context.coordinator.overlay = overlay
+        container.addSubview(overlay)
+
+        scroll.addSubview(container)
+        scroll.contentSize = imgSize
+
+        DispatchQueue.main.async {
+            let scaleX = scroll.bounds.width / imgSize.width
+            let scaleY = scroll.bounds.height / imgSize.height
+            scroll.setZoomScale(min(scaleX, scaleY), animated: false)
+            context.coordinator.centerContent(in: scroll)
+        }
+
+        return scroll
+    }
+
+    func updateUIView(_ scroll: UIScrollView, context: Context) {
+        context.coordinator.model = model
+        context.coordinator.overlay?.setNeedsDisplay()
+    }
+
+    func makeCoordinator() -> StartPickerCoordinator { StartPickerCoordinator(model: model) }
+}
+
+final class StartPickerCoordinator: NSObject, UIScrollViewDelegate {
+    var model: GeneticModel
+    weak var overlay: StartPickerOverlay?
+    weak var container: UIView?
+
+    init(model: GeneticModel) { self.model = model }
+
+    func viewForZooming(in scrollView: UIScrollView) -> UIView? { container }
+    func scrollViewDidZoom(_ scrollView: UIScrollView) { centerContent(in: scrollView) }
+
+    func centerContent(in scrollView: UIScrollView) {
+        guard let c = container else { return }
+        let offsetX = max((scrollView.bounds.width - c.frame.width) / 2, 0)
+        let offsetY = max((scrollView.bounds.height - c.frame.height) / 2, 0)
+        scrollView.contentInset = UIEdgeInsets(top: offsetY, left: offsetX,
+                                                bottom: offsetY, right: offsetX)
+    }
+
+    func handleTap(at point: CGPoint) {
+        model.startX = Double(point.x)
+        model.startY = Double(point.y)
+        model.startPlaced = true
+        overlay?.setNeedsDisplay()
+    }
+}
+
+final class StartPickerOverlay: UIView {
+    weak var coordinator: StartPickerCoordinator?
+
+    override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent?) {
+        guard let touch = touches.first else { return }
+        let pt = touch.location(in: self)
+        coordinator?.handleTap(at: pt)
+    }
+
+    override func draw(_ rect: CGRect) {
+        guard let ctx = UIGraphicsGetCurrentContext(),
+              let coord = coordinator else { return }
+        let model = coord.model
+
+        let cands = model.candidates
+        let mapW: CGFloat = 838
+        let cellW = mapW / CGFloat(model.gridCols)
+        let cellH: CGFloat = 686 / CGFloat(model.gridRows)
+
+        for cand in cands {
+            let pos = CGPoint(x: cand.x, y: cand.y)
+            ctx.setFillColor(UIColor.systemOrange.withAlphaComponent(0.7).cgColor)
+            ctx.fillEllipse(in: CGRect(x: pos.x - 8, y: pos.y - 8, width: 16, height: 16))
+            ctx.setStrokeColor(UIColor.white.cgColor)
+            ctx.setLineWidth(1.5)
+            ctx.strokeEllipse(in: CGRect(x: pos.x - 8, y: pos.y - 8, width: 16, height: 16))
+
+            let name = cand.place.name as NSString
+            let attrs: [NSAttributedString.Key: Any] = [
+                .font: UIFont.systemFont(ofSize: 7, weight: .semibold),
+                .foregroundColor: UIColor.black,
+                .backgroundColor: UIColor.white.withAlphaComponent(0.85)
+            ]
+            let sz = name.size(withAttributes: attrs)
+            name.draw(at: CGPoint(x: pos.x - sz.width / 2, y: pos.y + 10), withAttributes: attrs)
+        }
+
+        guard model.startPlaced else { return }
+        let startPt = CGPoint(x: model.startX, y: model.startY)
+        let r: CGFloat = 14
+
+        ctx.saveGState()
+        ctx.setShadow(offset: CGSize(width: 0, height: 2), blur: 4,
+                      color: UIColor.black.withAlphaComponent(0.3).cgColor)
+        ctx.setFillColor(UIColor.systemBlue.cgColor)
+        ctx.fillEllipse(in: CGRect(x: startPt.x - r, y: startPt.y - r, width: 2*r, height: 2*r))
+        ctx.restoreGState()
+
+        ctx.setStrokeColor(UIColor.white.cgColor)
+        ctx.setLineWidth(3)
+        ctx.strokeEllipse(in: CGRect(x: startPt.x - r, y: startPt.y - r, width: 2*r, height: 2*r))
+
+        let icon = UIImage(systemName: "figure.stand")?
+            .withConfiguration(UIImage.SymbolConfiguration(pointSize: 12, weight: .bold))
+            .withTintColor(.white, renderingMode: .alwaysOriginal)
+        if let icon = icon {
+            let s: CGFloat = 16
+            icon.draw(in: CGRect(x: startPt.x - s/2, y: startPt.y - s/2, width: s, height: s))
+        }
+
+        let label = "Вы здесь" as NSString
+        let labelAttrs: [NSAttributedString.Key: Any] = [
+            .font: UIFont.boldSystemFont(ofSize: 9),
+            .foregroundColor: UIColor.systemBlue,
+            .backgroundColor: UIColor.white.withAlphaComponent(0.9)
+        ]
+        let labelSz = label.size(withAttributes: labelAttrs)
+        label.draw(at: CGPoint(x: startPt.x - labelSz.width / 2, y: startPt.y + r + 3),
+                   withAttributes: labelAttrs)
+    }
+}
+
 struct GeneticCanvasRepresentable: UIViewRepresentable {
     @ObservedObject var model: GeneticModel
 
@@ -622,6 +935,7 @@ final class GeneticCanvas: UIView {
 
         let model = coord.model
         let cands = model.candidates
+        let segments = model.roadSegments
 
         let routeIndices: [Int]
         if let result = model.result {
@@ -645,24 +959,44 @@ final class GeneticCanvas: UIView {
 
         if !routeIndices.isEmpty {
 
-            ctx.setStrokeColor(UIColor.systemGreen.withAlphaComponent(0.9).cgColor)
-            ctx.setLineWidth(3.0)
-            ctx.setLineCap(.round)
-            ctx.setLineJoin(.round)
-
-            ctx.move(to: startPt)
+            var prevIdx = 0
             for candIdx in routeIndices {
                 guard candIdx < cands.count else { continue }
-                ctx.addLine(to: CGPoint(x: cands[candIdx].x, y: cands[candIdx].y))
-            }
-            ctx.strokePath()
+                let toIdx = candIdx + 1
+                let key = "\(prevIdx)-\(toIdx)"
 
-            var prevPt = startPt
-            for candIdx in routeIndices {
-                guard candIdx < cands.count else { continue }
-                let nextPt = CGPoint(x: cands[candIdx].x, y: cands[candIdx].y)
-                drawArrow(ctx: ctx, from: prevPt, to: nextPt, color: .systemGreen)
-                prevPt = nextPt
+                if let path = segments[key], path.count >= 2 {
+                    ctx.setStrokeColor(UIColor.systemGreen.withAlphaComponent(0.5).cgColor)
+                    ctx.setLineWidth(4.0)
+                    ctx.setLineCap(.round)
+                    ctx.setLineJoin(.round)
+                    ctx.move(to: path[0])
+                    for pt in path.dropFirst() { ctx.addLine(to: pt) }
+                    ctx.strokePath()
+
+                    ctx.setStrokeColor(UIColor.systemGreen.withAlphaComponent(0.9).cgColor)
+                    ctx.setLineWidth(2.5)
+                    ctx.move(to: path[0])
+                    for pt in path.dropFirst() { ctx.addLine(to: pt) }
+                    ctx.strokePath()
+
+                    let mid = path[path.count / 2]
+                    let prev = path[max(0, path.count / 2 - 3)]
+                    drawArrow(ctx: ctx, from: prev, to: mid, color: .systemGreen)
+                } else {
+                    let fromPt = prevIdx == 0 ? startPt : CGPoint(x: cands[prevIdx - 1].x, y: cands[prevIdx - 1].y)
+                    let toPt = CGPoint(x: cands[candIdx].x, y: cands[candIdx].y)
+                    ctx.setStrokeColor(UIColor.systemGreen.withAlphaComponent(0.9).cgColor)
+                    ctx.setLineWidth(2.5)
+                    ctx.setLineDash(phase: 0, lengths: [6, 4])
+                    ctx.move(to: fromPt)
+                    ctx.addLine(to: toPt)
+                    ctx.strokePath()
+                    ctx.setLineDash(phase: 0, lengths: [])
+                    drawArrow(ctx: ctx, from: fromPt, to: toPt, color: .systemGreen)
+                }
+
+                prevIdx = toIdx
             }
 
             for (step, candIdx) in routeIndices.enumerated() {
@@ -773,5 +1107,5 @@ final class GeneticCanvas: UIView {
 }
 
 #Preview {
-    GeneticView(places: loadPlaces())
+    GeneticView(places: loadPlaces(), mapModel: loadGridModel(filename: "campus-grid"))
 }

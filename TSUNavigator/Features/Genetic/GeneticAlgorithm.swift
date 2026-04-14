@@ -75,6 +75,7 @@ final class GeneticAlgorithm {
              selectedDishes: Set<String>,
              startX: Double, startY: Double,
              generations: Int = 300,
+             externalDistMatrix: [[Double]]? = nil,
              onGeneration: ((GeneticStep) -> Void)? = nil) -> GeneticResult {
 
         let n = candidates.count
@@ -85,7 +86,7 @@ final class GeneticAlgorithm {
                                  steps: [], generations: 0)
         }
 
-        let dist = buildDistMatrix(candidates: candidates, startX: startX, startY: startY)
+        let dist = externalDistMatrix ?? buildDistMatrix(candidates: candidates, startX: startX, startY: startY)
         var population = initPopulation(n: n)
         var steps: [GeneticStep] = []
         var globalBestRoute: [Int] = []
