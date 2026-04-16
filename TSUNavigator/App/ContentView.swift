@@ -43,7 +43,7 @@ struct ContentView: View {
             }
             .tag(Tab.food)
                 .tabItem {
-                    Label("Еда", systemImage: "takeoutbag.and.cup.and.straw")
+                    Label("Места", systemImage: "mappin.and.ellipse")
                 }
 
             ClusteringView(places: places)

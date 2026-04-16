@@ -290,22 +290,46 @@ struct AStarView: View {
 
     func buildingPlaceRow(_ place: FoodPlace) -> some View {
         HStack(spacing: 10) {
-            Circle()
-                .fill(categoryColor(for: place).opacity(0.16))
-                .frame(width: 34, height: 34)
-                .overlay(
-                    Image(systemName: place.category.icon)
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundColor(categoryColor(for: place))
-                )
+            ZStack(alignment: .bottomTrailing) {
+                Circle()
+                    .fill(categoryColor(for: place).opacity(0.16))
+                    .frame(width: 34, height: 34)
+                    .overlay(
+                        Image(systemName: place.category.icon)
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundColor(categoryColor(for: place))
+                    )
+
+                // Section badge
+                Circle()
+                    .fill(sectionBadgeColor(for: place))
+                    .frame(width: 12, height: 12)
+                    .overlay(
+                        Image(systemName: sectionBadgeIcon(for: place))
+                            .font(.system(size: 6, weight: .bold))
+                            .foregroundColor(.white)
+                    )
+                    .offset(x: 2, y: 2)
+            }
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(place.name)
                     .font(.subheadline.weight(.semibold))
                     .lineLimit(2)
-                Text(place.category.label)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
+                HStack(spacing: 4) {
+                    Text(place.category.label)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    if place.section != .food {
+                        Text("·")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        Text(place.section.label)
+                            .font(.caption2)
+                            .fontWeight(.medium)
+                            .foregroundColor(sectionBadgeColor(for: place))
+                    }
+                }
             }
 
             Spacer()
@@ -322,6 +346,22 @@ struct AStarView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
             }
             .buttonStyle(.plain)
+        }
+    }
+
+    func sectionBadgeColor(for place: FoodPlace) -> Color {
+        switch place.section {
+        case .food:      return .orange
+        case .landmark:  return .purple
+        case .coworking: return .teal
+        }
+    }
+
+    func sectionBadgeIcon(for place: FoodPlace) -> String {
+        switch place.section {
+        case .food:      return "fork.knife"
+        case .landmark:  return "building.columns"
+        case .coworking: return "laptopcomputer"
         }
     }
 
@@ -476,6 +516,13 @@ struct AStarView: View {
         case .fastfood:   return .red
         case .gastrohall: return .yellow
         case .shop:       return .teal
+        case .museum:     return .purple
+        case .monument:   return .indigo
+        case .garden:     return .mint
+        case .gallery:    return .pink
+        case .library:    return .teal
+        case .coworking:  return .cyan
+        case .studyroom:  return .blue
         }
     }
 

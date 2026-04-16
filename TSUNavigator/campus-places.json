@@ -91,6 +91,103 @@
     }
   },
   {
+    "address" : "пр. Ленина, 36",
+    "campusBuildingCell" : {
+      "col" : 308,
+      "row" : 174
+    },
+    "category" : "vending",
+    "description" : "Вендинговый автомат с горячими напитками, снеками и сэндвичами.",
+    "id" : "vending_main",
+    "latitude" : 56.4713,
+    "longitude" : 84.9505,
+    "menu" : [
+      {
+        "category" : "coffee",
+        "name" : "Эспрессо",
+        "priceMax" : 80,
+        "priceMin" : 60
+      },
+      {
+        "category" : "coffee",
+        "name" : "Капучино",
+        "priceMax" : 120,
+        "priceMin" : 80
+      },
+      {
+        "category" : "coffee",
+        "name" : "Латте",
+        "priceMax" : 120,
+        "priceMin" : 80
+      },
+      {
+        "category" : "drink",
+        "name" : "Морс",
+        "priceMax" : 100,
+        "priceMin" : 80
+      },
+      {
+        "category" : "tea",
+        "name" : "Чай",
+        "priceMax" : 80,
+        "priceMin" : 60
+      },
+      {
+        "category" : "drink",
+        "name" : "Вода",
+        "priceMax" : 80,
+        "priceMin" : 60
+      },
+      {
+        "category" : "drink",
+        "name" : "Соки",
+        "priceMax" : 120,
+        "priceMin" : 80
+      },
+      {
+        "category" : "snack",
+        "name" : "Блинчик с маслом",
+        "priceMax" : 120,
+        "priceMin" : 80
+      },
+      {
+        "category" : "snack",
+        "name" : "Блинчик с ветчиной и сыром",
+        "priceMax" : 100,
+        "priceMin" : 80
+      },
+      {
+        "category" : "snack",
+        "name" : "Блинчик сытный",
+        "priceMax" : 150,
+        "priceMin" : 100
+      },
+      {
+        "category" : "snack",
+        "name" : "Блинчик сладкий",
+        "priceMax" : 100,
+        "priceMin" : 60
+      },
+      {
+        "category" : "soup",
+        "name" : "Рассольник",
+        "priceMax" : 120,
+        "priceMin" : 80
+      },
+      {
+        "category" : "hot_meal",
+        "name" : "Курица с пюре",
+        "priceMax" : 200,
+        "priceMin" : 120
+      },
+    ],
+    "name" : "Сибирские блины",
+    "priceLevel" : "medium",
+    "schedule" : {
+      "note" : "08:00 - 20:00"
+    }
+  },
+  {
     "address" : "2-й корпус ТГУ",
     "campusBuildingCell" : {
       "col" : 219,
@@ -857,7 +954,7 @@
         "priceMin" : 280
       }
     ],
-    "name" : "Бажет Омлет",
+    "name" : "Багет Омлет",
     "priceLevel" : "high",
     "rating" : 4.4,
     "schedule" : {
@@ -1214,5 +1311,246 @@
     "schedule" : {
       "note" : "Круглосуточно"
     }
+  },
+  {
+    "address" : "пр. Ленина, 36 (Главный корпус ТГУ)",
+    "campusBuildingCell" : {
+      "col" : 308,
+      "row" : 174
+    },
+    "category" : "museum",
+    "description" : "Один из старейших университетских музеев России. Коллекция археологии, этнографии, палеонтологии. Основан в 1882 году.",
+    "id" : "museum_tsu_main",
+    "latitude" : 56.4713,
+    "longitude" : 84.9505,
+    "priceLevel" : "low",
+    "schedule" : {
+      "weekdays" : "10:00–17:00"
+    },
+    "name" : "Музей истории ТГУ"
+  },
+  {
+    "address" : "пр. Ленина, 36 (Главный корпус ТГУ)",
+    "campusBuildingCell" : {
+      "col" : 308,
+      "row" : 208
+    },
+    "category" : "museum",
+    "description" : "Зоологический музей при биологическом факультете ТГУ. Экспозиция включает коллекции млекопитающих, птиц, рептилий и насекомых Сибири.",
+    "id" : "museum_zoology",
+    "latitude" : 56.4712,
+    "longitude" : 84.9504,
+    "priceLevel" : "low",
+    "schedule" : {
+      "weekdays" : "10:00–17:00"
+    },
+    "name" : "Зоологический музей ТГУ"
+  },
+  {
+    "address" : "пр. Ленина, 36 (Главный корпус ТГУ)",
+    "campusBuildingCell" : {
+      "col" : 308,
+      "row" : 174
+    },
+    "category" : "museum",
+    "description" : "Минералогический музей с богатой коллекцией минералов, горных пород и метеоритов. Более 50 000 экспонатов.",
+    "id" : "museum_mineralogy",
+    "latitude" : 56.4713,
+    "longitude" : 84.9505,
+    "priceLevel" : "low",
+    "schedule" : {
+      "weekdays" : "10:00–17:00"
+    },
+    "name" : "Минералогический музей ТГУ"
+  },
+  {
+    "address" : "пр. Ленина, 34 (Университетская роща)",
+    "campusBuildingCell" : {
+      "col" : 360,
+      "row" : 120
+    },
+    "category" : "garden",
+    "description" : "Памятник природы регионального значения. Роща заложена в 1885 году ботаником П. Н. Крыловым. Пешеходные дорожки, скамейки, вековые деревья.",
+    "id" : "university_grove",
+    "latitude" : 56.4718,
+    "longitude" : 84.9498,
+    "priceLevel" : "low",
+    "schedule" : {
+      "note" : "Круглосуточно"
+    },
+    "name" : "Университетская роща"
+  },
+  {
+    "address" : "Университетская роща",
+    "campusBuildingCell" : {
+      "col" : 380,
+      "row" : 160
+    },
+    "category" : "monument",
+    "description" : "Памятник основателям Томского университета — В. М. Флоринскому и Д. И. Менделееву. Установлен в Университетской роще.",
+    "id" : "monument_founders",
+    "latitude" : 56.4715,
+    "longitude" : 84.9500,
+    "priceLevel" : "low",
+    "schedule" : {
+      "note" : "Круглосуточно"
+    },
+    "name" : "Памятник основателям ТГУ"
+  },
+  {
+    "address" : "пр. Ленина, 36",
+    "campusBuildingCell" : {
+      "col" : 330,
+      "row" : 190
+    },
+    "category" : "monument",
+    "description" : "Памятник в Университетской роще рядом с Главным корпусом. Потапов — один из выдающихся ректоров ТГУ.",
+    "id" : "monument_potapov",
+    "latitude" : 56.4714,
+    "longitude" : 84.9502,
+    "priceLevel" : "low",
+    "schedule" : {
+      "note" : "Круглосуточно"
+    },
+    "name" : "Памятник ректору Потапову"
+  },
+  {
+    "address" : "пр. Ленина, 36 (Научная библиотека ТГУ)",
+    "campusBuildingCell" : {
+      "col" : 370,
+      "row" : 230
+    },
+    "category" : "gallery",
+    "description" : "Выставочный зал в здании Научной библиотеки ТГУ. Регулярные выставки живописи, графики и фотографии.",
+    "id" : "gallery_library",
+    "latitude" : 56.4708,
+    "longitude" : 84.9510,
+    "priceLevel" : "low",
+    "schedule" : {
+      "weekdays" : "10:00–18:00"
+    },
+    "name" : "Выставочный зал НБ ТГУ"
+  },
+  {
+    "address" : "пр. Ленина, 34а (Ботанический сад ТГУ)",
+    "campusBuildingCell" : {
+      "col" : 420,
+      "row" : 50
+    },
+    "category" : "garden",
+    "description" : "Сибирский ботанический сад — старейший ботанический сад в азиатской части России. Оранжереи с тропическими растениями, дендрарий.",
+    "id" : "botanical_garden",
+    "latitude" : 56.4725,
+    "longitude" : 84.9520,
+    "priceLevel" : "low",
+    "schedule" : {
+      "weekdays" : "10:00–18:00",
+      "weekends" : "10:00–17:00"
+    },
+    "name" : "Ботанический сад ТГУ"
+  },
+  {
+    "address" : "пр. Ленина, 36 (Научная библиотека ТГУ)",
+    "campusBuildingCell" : {
+      "col" : 370,
+      "row" : 230
+    },
+    "category" : "library",
+    "description" : "Научная библиотека Томского государственного университета — одна из крупнейших университетских библиотек России. Читальные залы, электронный каталог, Wi-Fi.",
+    "id" : "library_main",
+    "latitude" : 56.4708,
+    "longitude" : 84.9510,
+    "priceLevel" : "low",
+    "schedule" : {
+      "weekdays" : "9:00–21:00",
+      "weekends" : "10:00–18:00"
+    },
+    "name" : "Научная библиотека ТГУ"
+  },
+  {
+    "address" : "пр. Ленина, 36 (Главный корпус ТГУ, 2 этаж)",
+    "campusBuildingCell" : {
+      "col" : 308,
+      "row" : 174
+    },
+    "category" : "coworking",
+    "description" : "Коворкинг в главном корпусе ТГУ. Рабочие места с розетками, Wi-Fi, зона для групповой работы.",
+    "id" : "coworking_main",
+    "latitude" : 56.4713,
+    "longitude" : 84.9505,
+    "priceLevel" : "low",
+    "schedule" : {
+      "weekdays" : "8:00–20:00"
+    },
+    "name" : "Коворкинг (Главный корпус)"
+  },
+  {
+    "address" : "пр. Ленина, 36 (Научная библиотека ТГУ, 3 этаж)",
+    "campusBuildingCell" : {
+      "col" : 370,
+      "row" : 230
+    },
+    "category" : "coworking",
+    "description" : "Коворкинг-зона в Научной библиотеке. Тихие рабочие места, розетки, Wi-Fi, принтер. Идеально для подготовки к экзаменам.",
+    "id" : "coworking_library",
+    "latitude" : 56.4708,
+    "longitude" : 84.9510,
+    "priceLevel" : "low",
+    "schedule" : {
+      "weekdays" : "9:00–21:00",
+      "weekends" : "10:00–18:00"
+    },
+    "name" : "Коворкинг (Библиотека)"
+  },
+  {
+    "address" : "2-й корпус ТГУ",
+    "campusBuildingCell" : {
+      "col" : 219,
+      "row" : 236
+    },
+    "category" : "studyroom",
+    "description" : "Зона самостоятельной работы на 1 этаже 2-го корпуса. Столы, стулья, розетки, Wi-Fi.",
+    "id" : "studyroom_2nd",
+    "latitude" : 56.4705,
+    "longitude" : 84.9490,
+    "priceLevel" : "low",
+    "schedule" : {
+      "weekdays" : "8:00–20:00"
+    },
+    "name" : "Учебная зона (2-й корпус)"
+  },
+  {
+    "address" : "Международный культурный центр ТГУ",
+    "campusBuildingCell" : {
+      "col" : 450,
+      "row" : 280
+    },
+    "category" : "coworking",
+    "description" : "Коворкинг в МКЦ ТГУ. Открытое пространство для работы и мероприятий. Wi-Fi, проектор, флипчарт.",
+    "id" : "coworking_mkc",
+    "latitude" : 56.4700,
+    "longitude" : 84.9515,
+    "priceLevel" : "low",
+    "schedule" : {
+      "weekdays" : "9:00–19:00"
+    },
+    "name" : "Коворкинг МКЦ"
+  },
+  {
+    "address" : "пр. Ленина, 36 (Институт экономики и менеджмента)",
+    "campusBuildingCell" : {
+      "col" : 350,
+      "row" : 200
+    },
+    "category" : "coworking",
+    "description" : "Коворкинг ИЭМ — пространство для студентов и преподавателей. Переговорные комнаты, Wi-Fi, кофемашина.",
+    "id" : "coworking_iem",
+    "latitude" : 56.4710,
+    "longitude" : 84.9500,
+    "priceLevel" : "low",
+    "schedule" : {
+      "weekdays" : "8:00–20:00"
+    },
+    "name" : "Коворкинг ИЭМ"
   }
 ]

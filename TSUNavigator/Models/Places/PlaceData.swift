@@ -1,7 +1,38 @@
 import Foundation
 import CoreLocation
 
+enum PlaceSection: String, Codable, CaseIterable {
+    case food       = "food"
+    case landmark   = "landmark"
+    case coworking  = "coworking"
+
+    var label: String {
+        switch self {
+        case .food:      return "Кафе"
+        case .landmark:  return "Достопримечательности"
+        case .coworking: return "Коворкинги"
+        }
+    }
+
+    var icon: String {
+        switch self {
+        case .food:      return "takeoutbag.and.cup.and.straw"
+        case .landmark:  return "building.columns"
+        case .coworking: return "laptopcomputer"
+        }
+    }
+
+    var accentColor: String {
+        switch self {
+        case .food:      return "orange"
+        case .landmark:  return "purple"
+        case .coworking: return "teal"
+        }
+    }
+}
+
 enum PlaceCategory: String, Codable, CaseIterable {
+    // Food
     case vending    = "vending"
     case buffet     = "buffet"
     case cafeteria  = "cafeteria"
@@ -11,6 +42,27 @@ enum PlaceCategory: String, Codable, CaseIterable {
     case fastfood   = "fastfood"
     case gastrohall = "gastrohall"
     case shop       = "shop"
+    // Landmarks
+    case museum     = "museum"
+    case monument   = "monument"
+    case garden     = "garden"
+    case gallery    = "gallery"
+    // Coworking
+    case library    = "library"
+    case coworking  = "coworking"
+    case studyroom  = "studyroom"
+
+    var section: PlaceSection {
+        switch self {
+        case .vending, .buffet, .cafeteria, .canteen, .coffeeshop,
+             .cafe, .fastfood, .gastrohall, .shop:
+            return .food
+        case .museum, .monument, .garden, .gallery:
+            return .landmark
+        case .library, .coworking, .studyroom:
+            return .coworking
+        }
+    }
 
     var icon: String {
         switch self {
@@ -23,6 +75,13 @@ enum PlaceCategory: String, Codable, CaseIterable {
         case .fastfood:   return "flame"
         case .gastrohall: return "lightbulb"
         case .shop:       return "cart"
+        case .museum:     return "building.columns"
+        case .monument:   return "trophy"
+        case .garden:     return "leaf.fill"
+        case .gallery:    return "paintpalette"
+        case .library:    return "books.vertical"
+        case .coworking:  return "laptopcomputer"
+        case .studyroom:  return "studentdesk"
         }
     }
 
@@ -37,6 +96,13 @@ enum PlaceCategory: String, Codable, CaseIterable {
         case .fastfood:   return "Фастфуд"
         case .gastrohall: return "Гастрохол"
         case .shop:       return "Магазин"
+        case .museum:     return "Музей"
+        case .monument:   return "Памятник"
+        case .garden:     return "Сад / Парк"
+        case .gallery:    return "Галерея"
+        case .library:    return "Библиотека"
+        case .coworking:  return "Коворкинг"
+        case .studyroom:  return "Учебная зона"
         }
     }
 }
@@ -178,6 +244,8 @@ struct FoodPlace: Codable, Identifiable {
     let latitude: Double
     let longitude: Double
 
+    var section: PlaceSection { category.section }
+
     init(
         id: String,
         name: String,
@@ -186,9 +254,9 @@ struct FoodPlace: Codable, Identifiable {
         address: String,
         description: String,
         schedule: WorkSchedule,
-        priceLevel: PriceLevel,
+        priceLevel: PriceLevel = .low,
         ratings: [Double] = [],
-        menu: [MenuItem],
+        menu: [MenuItem] = [],
         latitude: Double,
         longitude: Double
     ) {
@@ -215,8 +283,8 @@ struct FoodPlace: Codable, Identifiable {
         address = try container.decode(String.self, forKey: .address)
         description = try container.decode(String.self, forKey: .description)
         schedule = try container.decode(WorkSchedule.self, forKey: .schedule)
-        priceLevel = try container.decode(PriceLevel.self, forKey: .priceLevel)
-        menu = try container.decode([MenuItem].self, forKey: .menu)
+        priceLevel = try container.decodeIfPresent(PriceLevel.self, forKey: .priceLevel) ?? .low
+        menu = try container.decodeIfPresent([MenuItem].self, forKey: .menu) ?? []
         latitude = try container.decode(Double.self, forKey: .latitude)
         longitude = try container.decode(Double.self, forKey: .longitude)
 

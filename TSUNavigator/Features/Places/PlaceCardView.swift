@@ -20,9 +20,10 @@ struct PlaceCardView: View {
 
                     Divider()
 
-                    infoChips
-
-                    Divider()
+                    if place.section == .food {
+                        infoChips
+                        Divider()
+                    }
 
                     Text(place.description)
                         .font(.subheadline)
@@ -40,10 +41,11 @@ struct PlaceCardView: View {
                             .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.borderedProminent)
+                    .tint(sectionAccentColor)
                     .disabled(!place.isShownOnCampusMap)
 
                     if !place.isShownOnCampusMap {
-                        Text("Это заведение не привязано к карте кампуса.")
+                        Text("Это место не привязано к карте кампуса.")
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
@@ -56,6 +58,7 @@ struct PlaceCardView: View {
                             .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.borderedProminent)
+                    .tint(sectionAccentColor)
 
                     Button {
                         dismiss()
@@ -66,8 +69,10 @@ struct PlaceCardView: View {
                     }
                     .buttonStyle(.bordered)
 
-                    Divider()
-                    menuSection
+                    if place.section == .food && !place.menu.isEmpty {
+                        Divider()
+                        menuSection
+                    }
 
                     Divider()
 
@@ -250,6 +255,14 @@ struct PlaceCardView: View {
         }
     }
 
+    private var sectionAccentColor: Color {
+        switch place.section {
+        case .food:      return .orange
+        case .landmark:  return .purple
+        case .coworking: return .teal
+        }
+    }
+
     private var categoryColor: Color {
         switch place.category {
         case .vending:    return .purple
@@ -261,6 +274,13 @@ struct PlaceCardView: View {
         case .fastfood:   return .red
         case .gastrohall: return .yellow
         case .shop:       return .teal
+        case .museum:     return .purple
+        case .monument:   return .indigo
+        case .garden:     return .mint
+        case .gallery:    return .pink
+        case .library:    return .teal
+        case .coworking:  return .cyan
+        case .studyroom:  return .blue
         }
     }
 
@@ -316,10 +336,15 @@ struct PlacesListView: View {
     let onResetRating: (FoodPlace) -> Void
     @State private var selectedPlace: FoodPlace? = nil
     @State private var searchText = ""
+    @State private var selectedSection: PlaceSection = .food
     @State private var selectedCategory: PlaceCategory? = nil
 
+    private var categoriesForSection: [PlaceCategory] {
+        PlaceCategory.allCases.filter { $0.section == selectedSection }
+    }
+
     var filteredPlaces: [FoodPlace] {
-        var result = places
+        var result = places.filter { $0.section == selectedSection }
         if let cat = selectedCategory {
             result = result.filter { $0.category == cat }
         }
@@ -334,13 +359,33 @@ struct PlacesListView: View {
         return result
     }
 
+    private var sectionColor: Color {
+        switch selectedSection {
+        case .food:      return .orange
+        case .landmark:  return .purple
+        case .coworking: return .teal
+        }
+    }
+
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
+                // Section picker
+                Picker("Раздел", selection: $selectedSection) {
+                    ForEach(PlaceSection.allCases, id: \.self) { section in
+                        Label(section.label, systemImage: section.icon)
+                            .tag(section)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .padding(.horizontal, 12)
+                .padding(.top, 8)
+
+                // Category filter chips
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
                         filterChip(nil, "Все")
-                        ForEach(PlaceCategory.allCases, id: \.self) { cat in
+                        ForEach(categoriesForSection, id: \.self) { cat in
                             filterChip(cat, cat.label)
                         }
                     }
@@ -358,9 +403,9 @@ struct PlacesListView: View {
                 }
                 .listStyle(.plain)
             }
-            .navigationTitle("Заведения")
+            .navigationTitle(selectedSection.label)
             .navigationBarTitleDisplayMode(.inline)
-            .searchable(text: $searchText, prompt: "Поиск по названию или блюду")
+            .searchable(text: $searchText, prompt: searchPrompt)
             .sheet(item: $selectedPlace) { place in
                 PlaceCardView(place: place) {
                     onShowOnMap(place)
@@ -373,6 +418,18 @@ struct PlacesListView: View {
                 }
                     .presentationDetents([.medium, .large])
             }
+            .onChange(of: selectedSection) { _, _ in
+                selectedCategory = nil
+                searchText = ""
+            }
+        }
+    }
+
+    private var searchPrompt: String {
+        switch selectedSection {
+        case .food:      return "Поиск по названию или блюду"
+        case .landmark:  return "Поиск достопримечательности"
+        case .coworking: return "Поиск коворкинга"
         }
     }
 
@@ -386,7 +443,7 @@ struct PlacesListView: View {
                 .fontWeight(.medium)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 6)
-                .background(isSelected ? Color.blue : Color.gray.opacity(0.15))
+                .background(isSelected ? sectionColor : Color.gray.opacity(0.15))
                 .foregroundColor(isSelected ? .white : .primary)
                 .clipShape(Capsule())
         }
@@ -396,12 +453,24 @@ struct PlacesListView: View {
 struct PlaceRowView: View {
     let place: FoodPlace
 
+    private var rowIconColor: Color {
+        switch place.section {
+        case .food:      return .orange
+        case .landmark:  return .purple
+        case .coworking: return .teal
+        }
+    }
+
     var body: some View {
         HStack(spacing: 12) {
-            Image(systemName: place.category.icon)
-                .font(.title3)
-                .foregroundColor(.blue)
-                .frame(width: 36, height: 36)
+            ZStack {
+                Circle()
+                    .fill(rowIconColor.opacity(0.14))
+                    .frame(width: 36, height: 36)
+                Image(systemName: place.category.icon)
+                    .font(.subheadline)
+                    .foregroundColor(rowIconColor)
+            }
 
             VStack(alignment: .leading, spacing: 3) {
                 Text(place.name)
@@ -414,10 +483,12 @@ struct PlaceRowView: View {
                     .foregroundColor(.secondary)
 
                 HStack(spacing: 8) {
-                    Text(place.priceLevel.short)
-                        .font(.caption2)
-                        .fontWeight(.bold)
-                        .foregroundColor(.green)
+                    if place.section == .food {
+                        Text(place.priceLevel.short)
+                            .font(.caption2)
+                            .fontWeight(.bold)
+                            .foregroundColor(.green)
+                    }
 
                     Text(place.schedule.displayText)
                         .font(.caption2)
