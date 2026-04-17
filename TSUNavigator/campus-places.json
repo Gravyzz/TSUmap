@@ -179,7 +179,7 @@
         "name" : "Курица с пюре",
         "priceMax" : 200,
         "priceMin" : 120
-      },
+      }
     ],
     "name" : "Сибирские блины",
     "priceLevel" : "medium",

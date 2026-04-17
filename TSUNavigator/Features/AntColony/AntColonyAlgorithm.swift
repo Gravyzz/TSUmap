@@ -1,4 +1,6 @@
 import Foundation
+import CoreGraphics
+
 
 struct AntCity: Identifiable {
     let id: Int
@@ -23,6 +25,23 @@ struct AntResult {
     let iterations: Int
 }
 
+struct CoworkingSpot: Identifiable {
+    let id: Int
+    let name: String
+    let position: CGPoint
+    let capacity: Int
+    let comfort: Double
+}
+
+struct CoworkingResult {
+    let allocations: [Int]
+    let pheromones: [Double]
+    let distances: [Double]
+    let iterations: Int
+    let overflow: Int
+}
+
+
 final class AntColonyAlgorithm {
 
     private let antCount: Int
@@ -43,17 +62,20 @@ final class AntColonyAlgorithm {
         self.q           = q
     }
 
-    func run(cities: [AntCity], iterations: Int = 100) -> AntResult {
-        let n = cities.count
-        guard n >= 2 else {
-            return AntResult(bestRoute: Array(0..<n), bestDistance: 0,
+
+    func runOpenTSP(distMatrix: [[Double]],
+                    iterations: Int = 100,
+                    onStep: ((AntStep) -> Void)? = nil) -> AntResult {
+        let total = distMatrix.count
+        guard total >= 2 else {
+            return AntResult(bestRoute: [], bestDistance: 0,
                              steps: [], pheromoneMatrix: [], iterations: 0)
         }
 
-        let dist = buildDistanceMatrix(cities: cities)
-        var pheromone = Array(repeating: Array(repeating: 1.0, count: n), count: n)
+        let cityCount = total - 1
+        var pheromone = Array(repeating: Array(repeating: 1.0, count: total), count: total)
         var steps: [AntStep] = []
-        var globalBestRoute: [Int] = Array(0..<n)
+        var globalBestRoute: [Int] = Array(1...cityCount)
         var globalBestDist = Double.infinity
 
         for iter in 0..<iterations {
@@ -61,8 +83,9 @@ final class AntColonyAlgorithm {
             var allDists: [Double] = []
 
             for _ in 0..<antCount {
-                let route = buildRoute(n: n, pheromone: pheromone, dist: dist)
-                let d = routeDistance(route, dist: dist)
+                let route = buildOpenRoute(start: 0, cityCount: cityCount,
+                                           pheromone: pheromone, dist: distMatrix)
+                let d = openRouteDistance(route, dist: distMatrix)
                 allRoutes.append(route)
                 allDists.append(d)
 
@@ -72,34 +95,48 @@ final class AntColonyAlgorithm {
                 }
             }
 
-            for i in 0..<n {
-                for j in 0..<n {
+            for i in 0..<total {
+                for j in 0..<total {
                     pheromone[i][j] *= (1.0 - evaporation)
                     if pheromone[i][j] < 0.001 { pheromone[i][j] = 0.001 }
                 }
             }
 
             for k in 0..<antCount {
+                guard allDists[k] > 0 else { continue }
                 let contribution = q / allDists[k]
                 let route = allRoutes[k]
-                for i in 0..<route.count {
-                    let from = route[i]
-                    let to = route[(i + 1) % route.count]
-                    pheromone[from][to] += contribution
-                    pheromone[to][from] += contribution
+                var prev = 0
+                for next in route {
+                    pheromone[prev][next] += contribution
+                    pheromone[next][prev] += contribution
+                    prev = next
+                }
+            }
+
+            if globalBestDist.isFinite {
+                let elite = q / globalBestDist
+                var prev = 0
+                for next in globalBestRoute {
+                    pheromone[prev][next] += elite
+                    pheromone[next][prev] += elite
+                    prev = next
                 }
             }
 
             let avgDist = allDists.reduce(0, +) / Double(allDists.count)
 
+            let step = AntStep(
+                iteration: iter,
+                bestDistance: globalBestDist,
+                bestRoute: globalBestRoute,
+                avgDistance: avgDist
+            )
+
             if iter % 5 == 0 || iter == iterations - 1 {
-                steps.append(AntStep(
-                    iteration: iter,
-                    bestDistance: globalBestDist,
-                    bestRoute: globalBestRoute,
-                    avgDistance: avgDist
-                ))
+                steps.append(step)
             }
+            onStep?(step)
         }
 
         return AntResult(
@@ -111,71 +148,180 @@ final class AntColonyAlgorithm {
         )
     }
 
-    private func buildRoute(n: Int, pheromone: [[Double]], dist: [[Double]]) -> [Int] {
+    private func buildOpenRoute(start: Int, cityCount: Int,
+                                pheromone: [[Double]], dist: [[Double]]) -> [Int] {
         var visited = Set<Int>()
-        let start = Int.random(in: 0..<n)
-        var route = [start]
         visited.insert(start)
+        var route: [Int] = []
+        var current = start
 
-        for _ in 1..<n {
-            let current = route.last!
+        for _ in 0..<cityCount {
             let next = selectNext(current: current, visited: visited,
-                                  n: n, pheromone: pheromone, dist: dist)
+                                  total: dist.count,
+                                  pheromone: pheromone, dist: dist)
             route.append(next)
             visited.insert(next)
+            current = next
         }
-
         return route
     }
 
-    private func selectNext(current: Int, visited: Set<Int>,
-                            n: Int, pheromone: [[Double]], dist: [[Double]]) -> Int {
-        var probs: [(city: Int, prob: Double)] = []
-        var total = 0.0
+    private func openRouteDistance(_ route: [Int], dist: [[Double]]) -> Double {
+        guard !route.isEmpty else { return 0 }
+        var total = dist[0][route[0]]
+        for i in 1..<route.count {
+            total += dist[route[i - 1]][route[i]]
+        }
+        return total
+    }
 
-        for j in 0..<n {
+    private func selectNext(current: Int, visited: Set<Int>,
+                            total: Int, pheromone: [[Double]], dist: [[Double]]) -> Int {
+        var probs: [(city: Int, prob: Double)] = []
+        var totalProb = 0.0
+
+        for j in 0..<total {
             guard !visited.contains(j) else { continue }
             let tau = pow(pheromone[current][j], alpha)
-            let eta = dist[current][j] > 0 ? pow(1.0 / dist[current][j], beta) : 1e10
+            let d = dist[current][j]
+            let eta = d > 0 ? pow(1.0 / d, beta) : 1e10
             let p = tau * eta
             probs.append((city: j, prob: p))
-            total += p
+            totalProb += p
         }
 
         guard !probs.isEmpty else { return current }
-        guard total > 0 else { return probs[0].city }
+        guard totalProb > 0 else { return probs[0].city }
 
-        var r = Double.random(in: 0..<total)
+        var r = Double.random(in: 0..<totalProb)
         for (city, prob) in probs {
             r -= prob
             if r <= 0 { return city }
         }
-
         return probs.last!.city
     }
 
-    private func buildDistanceMatrix(cities: [AntCity]) -> [[Double]] {
-        let n = cities.count
-        var d = Array(repeating: Array(repeating: 0.0, count: n), count: n)
-        for i in 0..<n {
-            for j in (i+1)..<n {
-                let dx = cities[i].x - cities[j].x
-                let dy = cities[i].y - cities[j].y
-                let dist = sqrt(dx * dx + dy * dy)
-                d[i][j] = dist
-                d[j][i] = dist
+
+    func runCoworking(distances: [Double],
+                      spots: [CoworkingSpot],
+                      studentCount: Int,
+                      iterations: Int = 60) -> CoworkingResult {
+        let n = spots.count
+        guard n > 0, studentCount > 0 else {
+            return CoworkingResult(allocations: Array(repeating: 0, count: n),
+                                   pheromones: Array(repeating: 0, count: n),
+                                   distances: distances,
+                                   iterations: 0,
+                                   overflow: 0)
+        }
+
+        var pheromones = Array(repeating: 1.0, count: n)
+        let totalCapacity = spots.reduce(0) { $0 + $1.capacity }
+
+        for _ in 0..<iterations {
+            var roundAssigned = Array(repeating: 0, count: n)
+
+            for _ in 0..<antCount {
+                let chosen = selectCoworking(pheromones: pheromones,
+                                             distances: distances,
+                                             spots: spots,
+                                             assigned: roundAssigned)
+                roundAssigned[chosen] += 1
+            }
+
+            for j in 0..<n {
+                pheromones[j] *= (1.0 - evaporation)
+                if pheromones[j] < 0.001 { pheromones[j] = 0.001 }
+                if roundAssigned[j] > 0 {
+                    let routeQuality = q / max(distances[j], 1.0)
+                    pheromones[j] += routeQuality * spots[j].comfort * Double(roundAssigned[j])
+                }
             }
         }
-        return d
+
+        let allocations = greedyDistribute(studentCount: studentCount,
+                                           pheromones: pheromones,
+                                           spots: spots,
+                                           distances: distances,
+                                           totalCapacity: totalCapacity)
+
+        let overflow = max(0, studentCount - totalCapacity)
+
+        return CoworkingResult(
+            allocations: allocations,
+            pheromones: pheromones,
+            distances: distances,
+            iterations: iterations,
+            overflow: overflow
+        )
     }
 
-    private func routeDistance(_ route: [Int], dist: [[Double]]) -> Double {
-        var total = 0.0
-        for i in 0..<route.count {
-            let from = route[i]
-            let to = route[(i + 1) % route.count]
-            total += dist[from][to]
+    private func selectCoworking(pheromones: [Double],
+                                  distances: [Double],
+                                  spots: [CoworkingSpot],
+                                  assigned: [Int]) -> Int {
+        var probs: [Double] = []
+        var totalProb = 0.0
+
+        for j in 0..<spots.count {
+            let tau = pow(pheromones[j], alpha)
+            let d = max(distances[j], 1.0)
+            let eta = pow(1.0 / d, beta)
+            let comfort = spots[j].comfort
+            let cap = max(spots[j].capacity, 1)
+            let availFactor = max(0.0, Double(cap - assigned[j]) / Double(cap))
+            let p = tau * eta * comfort * (availFactor + 0.05)
+            probs.append(p)
+            totalProb += p
         }
-        return total
+
+        guard totalProb > 0 else { return 0 }
+        var r = Double.random(in: 0..<totalProb)
+        for (j, p) in probs.enumerated() {
+            r -= p
+            if r <= 0 { return j }
+        }
+        return probs.count - 1
+    }
+
+    private func greedyDistribute(studentCount: Int,
+                                   pheromones: [Double],
+                                   spots: [CoworkingSpot],
+                                   distances: [Double],
+                                   totalCapacity: Int) -> [Int] {
+        let n = spots.count
+        var allocations = Array(repeating: 0, count: n)
+        let scores: [Double] = (0..<n).map { j in
+            let d = max(distances[j], 1.0)
+            return pheromones[j] * spots[j].comfort / d
+        }
+
+        let placeable = min(studentCount, totalCapacity)
+        for _ in 0..<placeable {
+            var bestJ = -1
+            var bestScore = -Double.infinity
+            for j in 0..<n {
+                guard allocations[j] < spots[j].capacity else { continue }
+                if scores[j] > bestScore {
+                    bestScore = scores[j]
+                    bestJ = j
+                }
+            }
+            if bestJ < 0 { break }
+            allocations[bestJ] += 1
+        }
+
+        var remaining = studentCount - placeable
+        if remaining > 0 {
+            let order = (0..<n).sorted { scores[$0] > scores[$1] }
+            var idx = 0
+            while remaining > 0 {
+                allocations[order[idx % n]] += 1
+                remaining -= 1
+                idx += 1
+            }
+        }
+
+        return allocations
     }
 }

@@ -58,7 +58,7 @@ struct ContentView: View {
                     Label("Обед", systemImage: "bag")
                 }
 
-            AntView(places: places, gridCols: mapModel.cols, gridRows: mapModel.rows)
+            AntView(places: places, mapModel: mapModel)
                 .tag(Tab.walk)
                 .tabItem {
                     Label("Прогулка", systemImage: "figure.walk")

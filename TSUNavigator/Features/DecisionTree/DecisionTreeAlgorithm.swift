@@ -1,89 +1,36 @@
 import Foundation
 
-enum PlaceFeature: String, CaseIterable, Identifiable {
-    case budget
-    case hotFood
-    case coffee
-    case quickService
-    case fullMeal
-    case weekends
 
-    var id: String { rawValue }
-
-    var question: String {
-        switch self {
-        case .budget:       return "Какой у вас бюджет?"
-        case .hotFood:      return "Нужна горячая еда?"
-        case .coffee:       return "Хотите кофе?"
-        case .quickService: return "Нужно быстро перекусить?"
-        case .fullMeal:     return "Хотите полноценный обед?"
-        case .weekends:     return "Ищете место на выходные?"
-        }
-    }
-
-    var icon: String {
-        switch self {
-        case .budget:       return "rublesign.circle"
-        case .hotFood:      return "flame"
-        case .coffee:       return "cup.and.saucer.fill"
-        case .quickService: return "bolt"
-        case .fullMeal:     return "fork.knife"
-        case .weekends:     return "calendar"
-        }
-    }
-
-    func extract(from place: FoodPlace) -> String {
-        switch self {
-        case .budget:
-            return place.priceLevel.label
-        case .hotFood:
-            let has = place.menu.contains { $0.category == .hotMeal || $0.category == .soup }
-            return has ? "Да" : "Нет"
-        case .coffee:
-            let has = place.menu.contains { $0.category == .coffee }
-            return has ? "Да" : "Нет"
-        case .quickService:
-            let quick: Set<PlaceCategory> = [.vending, .buffet, .fastfood, .shop]
-            return quick.contains(place.category) ? "Да" : "Нет"
-        case .fullMeal:
-            let cats = Set(place.menu.map { $0.category })
-            let has = cats.contains(.hotMeal) && (cats.contains(.salad) || cats.contains(.soup))
-            return has ? "Да" : "Нет"
-        case .weekends:
-            if let note = place.schedule.note {
-                let lower = note.lowercased()
-                return (lower.contains("ежедневно") || lower.contains("круглосуточно")) ? "Да" : "Нет"
-            }
-            return place.schedule.weekends != nil ? "Да" : "Нет"
-        }
-    }
-
-    var possibleAnswers: [String] {
-        switch self {
-        case .budget: return [PriceLevel.low.label, PriceLevel.medium.label, PriceLevel.high.label]
-        default:      return ["Да", "Нет"]
-        }
-    }
+struct TrainingSample: Identifiable {
+    let id = UUID()
+    let features: [String: String]
+    let label: String
 }
 
-final class DecisionTreeNode: Identifiable {
+struct FeatureSchema {
+    let name: String
+    let title: String
+    let icon: String
+    let values: [String]
+    let valueLabels: [String: String]
+}
+
+
+final class DTNode: Identifiable {
     let id = UUID()
-    let entropy: Double
     let sampleCount: Int
-    let samples: [FoodPlace]
+    let entropy: Double
+    let majorityLabel: String
+    let labelCounts: [String: Int]
+    let type: DTNodeType
 
-    enum NodeType {
-        case leaf
-        case split(feature: PlaceFeature, gain: Double,
-                   children: [(value: String, node: DecisionTreeNode)])
-    }
-
-    let type: NodeType
-
-    init(entropy: Double, samples: [FoodPlace], type: NodeType) {
+    init(sampleCount: Int, entropy: Double,
+         majorityLabel: String, labelCounts: [String: Int],
+         type: DTNodeType) {
+        self.sampleCount = sampleCount
         self.entropy = entropy
-        self.sampleCount = samples.count
-        self.samples = samples
+        self.majorityLabel = majorityLabel
+        self.labelCounts = labelCounts
         self.type = type
     }
 
@@ -100,110 +47,398 @@ final class DecisionTreeNode: Identifiable {
         }
     }
 
-    var totalNodes: Int {
+    var nodeCount: Int {
         switch type {
         case .leaf: return 1
         case .split(_, _, let children):
-            return 1 + children.reduce(0) { $0 + $1.node.totalNodes }
+            return 1 + children.reduce(0) { $0 + $1.node.nodeCount }
+        }
+    }
+
+    var leafCount: Int {
+        switch type {
+        case .leaf: return 1
+        case .split(_, _, let children):
+            return children.reduce(0) { $0 + $1.node.leafCount }
         }
     }
 }
 
-struct TreeBuildStep: Identifiable {
-    let id = UUID()
+indirect enum DTNodeType {
+    case leaf
+    case split(featureName: String,
+               gain: Double,
+               children: [(value: String, node: DTNode)])
+}
+
+
+
+struct CSVParseResult {
+    let samples: [TrainingSample]
+    let featureNames: [String]
+    let labelName: String
+    let featureValues: [String: [String]]
+    let labels: [String]
+    let errors: [String]
+}
+
+enum CSVParser {
+    static func parse(text: String) -> CSVParseResult {
+        var errors: [String] = []
+        let lines = text
+            .split(whereSeparator: { $0 == "\n" || $0 == "\r" })
+            .map { String($0).trimmingCharacters(in: .whitespaces) }
+            .filter { !$0.isEmpty && !$0.hasPrefix("#") }
+
+        guard lines.count >= 2 else {
+            return CSVParseResult(samples: [], featureNames: [],
+                                  labelName: "", featureValues: [:],
+                                  labels: [],
+                                  errors: ["Нужен заголовок и минимум 1 строка данных"])
+        }
+
+        let header = splitLine(lines[0])
+        guard header.count >= 2 else {
+            return CSVParseResult(samples: [], featureNames: [],
+                                  labelName: "", featureValues: [:],
+                                  labels: [],
+                                  errors: ["В заголовке должно быть ≥ 2 колонок"])
+        }
+
+        let featureNames = Array(header.dropLast())
+        let labelName = header.last!
+
+        var samples: [TrainingSample] = []
+        var featureValues: [String: Set<String>] = [:]
+        var labelSet: Set<String> = []
+
+        for (i, line) in lines.dropFirst().enumerated() {
+            let parts = splitLine(line)
+            if parts.count != header.count {
+                errors.append("Строка \(i + 2): ожидалось \(header.count) значений, получено \(parts.count)")
+                continue
+            }
+            var dict: [String: String] = [:]
+            for (j, name) in featureNames.enumerated() {
+                let v = parts[j]
+                dict[name] = v
+                featureValues[name, default: []].insert(v)
+            }
+            let label = parts[header.count - 1]
+            labelSet.insert(label)
+            samples.append(TrainingSample(features: dict, label: label))
+        }
+
+        let ordered = featureValues.mapValues { Array($0).sorted() }
+        return CSVParseResult(samples: samples,
+                              featureNames: featureNames,
+                              labelName: labelName,
+                              featureValues: ordered,
+                              labels: Array(labelSet).sorted(),
+                              errors: errors)
+    }
+
+    private static func splitLine(_ line: String) -> [String] {
+        line.split(separator: ",", omittingEmptySubsequences: false)
+            .map { String($0).trimmingCharacters(in: .whitespaces) }
+    }
+}
+
+
+struct DTBuildStep {
     let depth: Int
     let sampleCount: Int
     let entropy: Double
-    let featureGains: [(feature: PlaceFeature, gain: Double)]
-    let chosen: PlaceFeature?
+    let gains: [(feature: String, gain: Double)]
+    let chosen: String?
     let description: String
 }
 
 final class DecisionTreeBuilder {
-    private(set) var buildSteps: [TreeBuildStep] = []
-    private let minSamplesLeaf: Int
+    private(set) var steps: [DTBuildStep] = []
 
-    init(minSamplesLeaf: Int = 2) {
-        self.minSamplesLeaf = minSamplesLeaf
+    var maxDepth: Int = 6
+    var minSamplesLeaf: Int = 1
+    var minInfoGain: Double = 0.001
+
+    func build(samples: [TrainingSample],
+               featureNames: [String]) -> DTNode {
+        steps = []
+        return build(samples: samples, features: featureNames, depth: 0)
     }
 
-    func buildTree(places: [FoodPlace],
-                   features: [PlaceFeature] = PlaceFeature.allCases) -> DecisionTreeNode {
-        buildSteps = []
-        return build(places: places, features: features, depth: 0)
-    }
+    private func build(samples: [TrainingSample],
+                       features: [String],
+                       depth: Int) -> DTNode {
+        let ent = entropy(samples)
+        let counts = labelCounts(samples)
+        let majority = counts.max(by: { $0.value < $1.value })?.key ?? "—"
 
-    private func build(places: [FoodPlace],
-                       features: [PlaceFeature],
-                       depth: Int) -> DecisionTreeNode {
-        let ent = entropy(places)
+        let stop = samples.count <= minSamplesLeaf
+            || features.isEmpty
+            || ent < 0.001
+            || depth >= maxDepth
 
-        if places.count <= minSamplesLeaf || features.isEmpty || ent < 0.001 {
-            buildSteps.append(TreeBuildStep(
-                depth: depth, sampleCount: places.count, entropy: ent,
-                featureGains: [], chosen: nil,
-                description: "Лист: \(places.count) мест, H=\(String(format: "%.3f", ent))"
-            ))
-            return DecisionTreeNode(entropy: ent, samples: places, type: .leaf)
+        if stop {
+            steps.append(DTBuildStep(depth: depth,
+                                     sampleCount: samples.count,
+                                     entropy: ent, gains: [], chosen: nil,
+                                     description: "Лист: \(samples.count) записей → «\(majority)»"))
+            return DTNode(sampleCount: samples.count, entropy: ent,
+                          majorityLabel: majority,
+                          labelCounts: counts, type: .leaf)
         }
 
-        let gains: [(PlaceFeature, Double)] = features.map { f in
-            (f, informationGain(places: places, feature: f))
+        let gains: [(String, Double)] = features.map { f in
+            (f, informationGain(samples: samples, feature: f))
         }
 
-        guard let best = gains.max(by: { $0.1 < $1.1 }), best.1 > 0.001 else {
-            buildSteps.append(TreeBuildStep(
-                depth: depth, sampleCount: places.count, entropy: ent,
-                featureGains: gains.map { (feature: $0.0, gain: $0.1) },
-                chosen: nil,
-                description: "Лист: нет значимого gain"
-            ))
-            return DecisionTreeNode(entropy: ent, samples: places, type: .leaf)
+        guard let best = gains.max(by: { $0.1 < $1.1 }), best.1 > minInfoGain else {
+            steps.append(DTBuildStep(depth: depth,
+                                     sampleCount: samples.count,
+                                     entropy: ent,
+                                     gains: gains.map { (feature: $0.0, gain: $0.1) },
+                                     chosen: nil,
+                                     description: "Лист: нет значимого прироста"))
+            return DTNode(sampleCount: samples.count, entropy: ent,
+                          majorityLabel: majority,
+                          labelCounts: counts, type: .leaf)
         }
 
-        buildSteps.append(TreeBuildStep(
-            depth: depth, sampleCount: places.count, entropy: ent,
-            featureGains: gains.map { (feature: $0.0, gain: $0.1) },
-            chosen: best.0,
-            description: "Разбиение по «\(best.0.question)», IG=\(String(format: "%.3f", best.1))"
-        ))
-
-        let groups = Dictionary(grouping: places) { best.0.extract(from: $0) }
+        let groups = Dictionary(grouping: samples) { $0.features[best.0] ?? "?" }
         let remaining = features.filter { $0 != best.0 }
+        let sortedKeys = groups.keys.sorted()
 
-        let orderedKeys = best.0.possibleAnswers.filter { groups[$0] != nil }
-        let children: [(String, DecisionTreeNode)] = orderedKeys.map { key in
-            let child = build(places: groups[key]!, features: remaining, depth: depth + 1)
-            return (key, child)
+        let children: [(String, DTNode)] = sortedKeys.map { key in
+            (key, build(samples: groups[key]!, features: remaining, depth: depth + 1))
         }
 
-        return DecisionTreeNode(
-            entropy: ent, samples: places,
-            type: .split(feature: best.0, gain: best.1,
-                         children: children.map { (value: $0.0, node: $0.1) })
-        )
+        steps.append(DTBuildStep(depth: depth,
+                                 sampleCount: samples.count,
+                                 entropy: ent,
+                                 gains: gains.map { (feature: $0.0, gain: $0.1) },
+                                 chosen: best.0,
+                                 description: "Ветвление по «\(best.0)», IG=\(String(format: "%.3f", best.1))"))
+
+        return DTNode(sampleCount: samples.count, entropy: ent,
+                      majorityLabel: majority,
+                      labelCounts: counts,
+                      type: .split(featureName: best.0, gain: best.1,
+                                   children: children.map { (value: $0.0, node: $0.1) }))
     }
 
-    func entropy(_ places: [FoodPlace]) -> Double {
-        guard !places.isEmpty else { return 0 }
-        let groups = Dictionary(grouping: places) { $0.category.rawValue }
-        let total = Double(places.count)
+    func prune(_ root: DTNode, minGain: Double) -> DTNode {
+        switch root.type {
+        case .leaf:
+            return root
+        case .split(let feature, let gain, let children):
+            let pruned = children.map { (v, c) -> (String, DTNode) in
+                (v, prune(c, minGain: minGain))
+            }
+            let allLeavesSameMajority = pruned.allSatisfy { (_, c) in
+                c.isLeaf && c.majorityLabel == root.majorityLabel
+            }
+            if allLeavesSameMajority || gain < minGain {
+                return DTNode(sampleCount: root.sampleCount,
+                              entropy: root.entropy,
+                              majorityLabel: root.majorityLabel,
+                              labelCounts: root.labelCounts, type: .leaf)
+            }
+            return DTNode(sampleCount: root.sampleCount,
+                          entropy: root.entropy,
+                          majorityLabel: root.majorityLabel,
+                          labelCounts: root.labelCounts,
+                          type: .split(featureName: feature, gain: gain,
+                                       children: pruned.map { (value: $0.0, node: $0.1) }))
+        }
+    }
+
+
+    func entropy(_ samples: [TrainingSample]) -> Double {
+        guard !samples.isEmpty else { return 0 }
+        let counts = labelCounts(samples)
+        let total = Double(samples.count)
         var h = 0.0
-        for (_, group) in groups {
-            let p = Double(group.count) / total
+        for (_, c) in counts {
+            let p = Double(c) / total
             if p > 0 { h -= p * log2(p) }
         }
         return h
     }
 
-    func informationGain(places: [FoodPlace], feature: PlaceFeature) -> Double {
-        let totalH = entropy(places)
-        let groups = Dictionary(grouping: places) { feature.extract(from: $0) }
-        let total = Double(places.count)
-        var weightedH = 0.0
+    func informationGain(samples: [TrainingSample], feature: String) -> Double {
+        let total = Double(samples.count)
+        let h = entropy(samples)
+        let groups = Dictionary(grouping: samples) { $0.features[feature] ?? "?" }
+        var weighted = 0.0
         for (_, group) in groups {
-            weightedH += (Double(group.count) / total) * entropy(group)
+            weighted += (Double(group.count) / total) * entropy(group)
         }
-        return totalH - weightedH
+        return h - weighted
+    }
+
+    func labelCounts(_ samples: [TrainingSample]) -> [String: Int] {
+        var d: [String: Int] = [:]
+        for s in samples { d[s.label, default: 0] += 1 }
+        return d
+    }
+
+    func trainingAccuracy(tree: DTNode, samples: [TrainingSample]) -> Double {
+        guard !samples.isEmpty else { return 0 }
+        var correct = 0
+        for s in samples {
+            let pred = DecisionTreePredictor.predict(tree: tree, query: s.features)
+            if pred.label == s.label { correct += 1 }
+        }
+        return Double(correct) / Double(samples.count)
+    }
+}
+
+
+struct PredictionStep {
+    let nodeId: UUID
+    let childId: UUID
+    let feature: String
+    let value: String
+}
+
+struct PredictionResult {
+    let label: String
+    let path: [PredictionStep]
+    let leafId: UUID
+    let leafDistribution: [String: Int]
+    let confidence: Double
+    let unknownBranch: Bool
+}
+
+enum DecisionTreePredictor {
+    static func predict(tree: DTNode, query: [String: String]) -> PredictionResult {
+        var node = tree
+        var path: [PredictionStep] = []
+        var unknown = false
+
+        while true {
+            switch node.type {
+            case .leaf:
+                let total = node.labelCounts.values.reduce(0, +)
+                let conf = total > 0
+                    ? Double(node.labelCounts[node.majorityLabel] ?? 0) / Double(total)
+                    : 0
+                return PredictionResult(label: node.majorityLabel,
+                                        path: path,
+                                        leafId: node.id,
+                                        leafDistribution: node.labelCounts,
+                                        confidence: conf,
+                                        unknownBranch: unknown)
+            case .split(let feature, _, let children):
+                let value = query[feature] ?? ""
+                let chosen: DTNode
+                if let match = children.first(where: { $0.value == value }) {
+                    chosen = match.node
+                    path.append(PredictionStep(nodeId: node.id, childId: chosen.id,
+                                               feature: feature, value: value))
+                } else {
+                    unknown = true
+                    guard let best = children.max(by: { $0.node.sampleCount < $1.node.sampleCount }) else {
+                        return PredictionResult(label: node.majorityLabel,
+                                                path: path,
+                                                leafId: node.id,
+                                                leafDistribution: node.labelCounts,
+                                                confidence: 0.0,
+                                                unknownBranch: true)
+                    }
+                    chosen = best.node
+                    path.append(PredictionStep(nodeId: node.id, childId: chosen.id,
+                                               feature: feature,
+                                               value: value.isEmpty ? "—" : value))
+                }
+                node = chosen
+            }
+        }
+    }
+}
+
+enum DecisionTreeDefaults {
+    static let spec: [FeatureSchema] = [
+        FeatureSchema(name: "location", title: "Где находится",
+                      icon: "location.fill",
+                      values: ["main_building", "second_building",
+                               "bus_stop", "campus_center"],
+                      valueLabels: [
+                        "main_building": "Главный корпус",
+                        "second_building": "2-й корпус",
+                        "bus_stop": "Остановка",
+                        "campus_center": "Центр кампуса"
+                      ]),
+        FeatureSchema(name: "budget", title: "Бюджет",
+                      icon: "rublesign.circle.fill",
+                      values: ["low", "medium", "high"],
+                      valueLabels: ["low": "Низкий", "medium": "Средний", "high": "Высокий"]),
+        FeatureSchema(name: "time_available", title: "Сколько времени",
+                      icon: "clock.fill",
+                      values: ["very_short", "short", "medium"],
+                      valueLabels: [
+                        "very_short": "Очень мало",
+                        "short": "Мало",
+                        "medium": "Средне"
+                      ]),
+        FeatureSchema(name: "food_type", title: "Что хочется",
+                      icon: "fork.knife",
+                      values: ["coffee", "pancakes", "full_meal", "snack"],
+                      valueLabels: [
+                        "coffee": "Кофе",
+                        "pancakes": "Блинчики",
+                        "full_meal": "Полноценно",
+                        "snack": "Перекус"
+                      ]),
+        FeatureSchema(name: "queue_tolerance", title: "Готов ждать очередь",
+                      icon: "person.2.wave.2.fill",
+                      values: ["low", "medium", "high"],
+                      valueLabels: ["low": "Нет", "medium": "Средне", "high": "Да"]),
+        FeatureSchema(name: "weather", title: "Погода",
+                      icon: "cloud.sun.fill",
+                      values: ["good", "bad"],
+                      valueLabels: ["good": "Хорошая", "bad": "Плохая"])
+    ]
+
+    static let sampleCSV: String = """
+location,budget,time_available,food_type,queue_tolerance,weather,recommended_place
+main_building,low,short,coffee,low,good,Буфет №1
+main_building,low,short,coffee,medium,good,Буфет №1
+main_building,low,very_short,snack,low,good,Вендинг
+main_building,low,very_short,snack,medium,bad,Вендинг
+main_building,medium,medium,full_meal,high,good,Столовая ТГУ
+main_building,medium,medium,full_meal,medium,bad,Столовая ТГУ
+main_building,high,medium,full_meal,high,good,Ресторан Университетский
+main_building,medium,short,pancakes,medium,good,Теремок
+second_building,low,short,coffee,low,good,Буфет №2
+second_building,low,very_short,snack,low,bad,Вендинг
+second_building,medium,short,pancakes,medium,good,Теремок
+second_building,medium,medium,full_meal,high,good,Столовая №2
+second_building,high,medium,full_meal,medium,good,Кафе Каштан
+bus_stop,low,very_short,coffee,low,bad,Киоск Coffee Like
+bus_stop,low,very_short,snack,low,bad,Киоск Coffee Like
+bus_stop,medium,short,pancakes,medium,good,Теремок
+bus_stop,medium,short,coffee,medium,good,Кафе Каштан
+bus_stop,high,medium,full_meal,medium,bad,Кафе Каштан
+campus_center,low,short,coffee,medium,good,Буфет №1
+campus_center,low,very_short,snack,low,good,Вендинг
+campus_center,medium,medium,full_meal,medium,good,Столовая ТГУ
+campus_center,medium,short,pancakes,medium,good,Теремок
+campus_center,high,medium,full_meal,high,good,Ресторан Университетский
+campus_center,high,medium,full_meal,low,bad,Ресторан Университетский
+"""
+
+    static func schema(for featureName: String,
+                       parsed values: [String]? = nil) -> FeatureSchema {
+        if let spec = spec.first(where: { $0.name == featureName }) {
+            return spec
+        }
+        let vs = values ?? []
+        return FeatureSchema(name: featureName,
+                             title: featureName,
+                             icon: "questionmark.circle",
+                             values: vs,
+                             valueLabels: Dictionary(uniqueKeysWithValues: vs.map { ($0, $0) }))
     }
 }
