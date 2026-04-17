@@ -1,7 +1,6 @@
 import SwiftUI
 import UIKit
 
-
 struct DecisionTreeView: View {
     let places: [FoodPlace]
 
@@ -57,7 +56,6 @@ struct DecisionTreeView: View {
         }
     }
 
-
     private func combinedCSV() -> String {
         let header = baseCSV.split(separator: "\n").first.map(String.init) ?? ""
         let extras = additionalCSV
@@ -104,7 +102,6 @@ struct DecisionTreeView: View {
         }
         query = q
     }
-
 
     private var queryStageView: some View {
         VStack(spacing: 0) {
@@ -266,7 +263,6 @@ struct DecisionTreeView: View {
         .shadow(color: .black.opacity(0.08), radius: 6, y: 2)
     }
 
-
     private var treeStageView: some View {
         VStack(spacing: 0) {
             if let tree = shownTree {
@@ -383,7 +379,6 @@ struct DecisionTreeView: View {
                  icon: "checkmark.seal.fill", color: .orange)
         }
     }
-
 
     private var dataStageView: some View {
         VStack(spacing: 0) {
@@ -511,7 +506,6 @@ struct DecisionTreeView: View {
         }
     }
 
-
     private func slider(_ label: String, value: Binding<Double>,
                         range: ClosedRange<Double>, step: Double,
                         format: String = "%.0f") -> some View {
@@ -545,8 +539,6 @@ struct DecisionTreeView: View {
         .padding()
     }
 }
-
-
 
 struct PositionedNode: Identifiable {
     let id: UUID
@@ -614,7 +606,6 @@ enum TreeLayoutEngine {
         return TreeLayout(nodes: nodes, edges: edges, width: width, height: height)
     }
 }
-
 
 struct ZoomableTreeCanvas: UIViewRepresentable {
     let tree: DTNode

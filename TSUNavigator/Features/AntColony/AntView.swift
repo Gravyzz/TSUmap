@@ -1,8 +1,6 @@
 import SwiftUI
 import Combine
 
-
-
 private let coworkingMeta: [String: (capacity: Int, comfort: Double)] = [
     "coworking_main":    (30, 0.70),
     "coworking_library": (50, 0.90),
@@ -11,8 +9,6 @@ private let coworkingMeta: [String: (capacity: Int, comfort: Double)] = [
     "coworking_iem":     (25, 0.75),
     "library_main":      (60, 0.85)
 ]
-
-
 
 private let mapW: CGFloat = 838
 private let mapH: CGFloat = 686
@@ -233,7 +229,6 @@ final class AntTSPModel: ObservableObject {
         return (dist, segments)
     }
 }
-
 
 final class AntCoworkingModel: ObservableObject {
     @Published var startX: Double = 419
@@ -470,7 +465,6 @@ struct AntView: View {
             }
         }
     }
-
 
     @ViewBuilder
     private var walkContent: some View {
@@ -723,7 +717,6 @@ struct AntView: View {
         }
     }
 
-
     @ViewBuilder
     private var coworkingContent: some View {
         if cwModel.spots.isEmpty {
@@ -890,7 +883,6 @@ struct AntView: View {
         }
     }
 
-
     private func emptyView(icon: String, title: String, hint: String) -> some View {
         VStack(spacing: 16) {
             Image(systemName: icon).font(.system(size: 50)).foregroundColor(.secondary)
@@ -921,7 +913,6 @@ struct AntView: View {
         }
     }
 }
-
 
 struct AntStartPickerCanvas: UIViewRepresentable {
     @ObservedObject var model: AntTSPModel
@@ -1036,7 +1027,6 @@ final class AntStartOverlay: UIView {
         drawStartMarker(ctx: ctx, x: model.startX, y: model.startY)
     }
 }
-
 
 struct AntTSPCanvas: UIViewRepresentable {
     @ObservedObject var model: AntTSPModel
@@ -1187,12 +1177,9 @@ final class AntTSPCanvasView: UIView {
                          index: inRoute.map { $0 + 1 })
         }
 
-
         drawStartMarker(ctx: ctx, x: model.startX, y: model.startY)
     }
 }
-
-
 
 struct CoworkingStartPickerCanvas: UIViewRepresentable {
     @ObservedObject var model: AntCoworkingModel
@@ -1293,7 +1280,6 @@ final class CoworkingStartOverlay: UIView {
                         count: model.studentCount)
     }
 }
-
 
 struct CoworkingCanvas: UIViewRepresentable {
     @ObservedObject var model: AntCoworkingModel
@@ -1412,19 +1398,16 @@ final class CoworkingCanvasView: UIView {
             }
         }
 
-    
         for (j, spot) in model.spots.enumerated() {
             let count = result?.allocations[j] ?? 0
             let isOver = count > spot.capacity
             drawCoworkingDot(ctx: ctx, spot: spot, count: count, isOver: isOver, faded: false)
         }
 
-    
         drawGroupMarker(ctx: ctx, x: model.startX, y: model.startY,
                         count: model.studentCount)
     }
 }
-
 
 private func drawStartMarker(ctx: CGContext, x: Double, y: Double) {
     let pos = CGPoint(x: x, y: y)

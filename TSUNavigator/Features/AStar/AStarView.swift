@@ -300,7 +300,6 @@ struct AStarView: View {
                             .foregroundColor(categoryColor(for: place))
                     )
 
-                // Section badge
                 Circle()
                     .fill(sectionBadgeColor(for: place))
                     .frame(width: 12, height: 12)

@@ -1,7 +1,6 @@
 import Foundation
 import CoreGraphics
 
-
 struct AntCity: Identifiable {
     let id: Int
     let name: String
@@ -41,7 +40,6 @@ struct CoworkingResult {
     let overflow: Int
 }
 
-
 final class AntColonyAlgorithm {
 
     private let antCount: Int
@@ -62,7 +60,6 @@ final class AntColonyAlgorithm {
         self.q           = q
     }
 
-
     func runOpenTSP(distMatrix: [[Double]],
                     iterations: Int = 100,
                     onStep: ((AntStep) -> Void)? = nil) -> AntResult {
@@ -73,6 +70,7 @@ final class AntColonyAlgorithm {
         }
 
         let cityCount = total - 1
+
         var pheromone = Array(repeating: Array(repeating: 1.0, count: total), count: total)
         var steps: [AntStep] = []
         var globalBestRoute: [Int] = Array(1...cityCount)
@@ -184,6 +182,7 @@ final class AntColonyAlgorithm {
             guard !visited.contains(j) else { continue }
             let tau = pow(pheromone[current][j], alpha)
             let d = dist[current][j]
+
             let eta = d > 0 ? pow(1.0 / d, beta) : 1e10
             let p = tau * eta
             probs.append((city: j, prob: p))
@@ -200,7 +199,6 @@ final class AntColonyAlgorithm {
         }
         return probs.last!.city
     }
-
 
     func runCoworking(distances: [Double],
                       spots: [CoworkingSpot],
@@ -219,6 +217,7 @@ final class AntColonyAlgorithm {
         let totalCapacity = spots.reduce(0) { $0 + $1.capacity }
 
         for _ in 0..<iterations {
+
             var roundAssigned = Array(repeating: 0, count: n)
 
             for _ in 0..<antCount {
@@ -291,6 +290,7 @@ final class AntColonyAlgorithm {
                                    totalCapacity: Int) -> [Int] {
         let n = spots.count
         var allocations = Array(repeating: 0, count: n)
+
         let scores: [Double] = (0..<n).map { j in
             let d = max(distances[j], 1.0)
             return pheromones[j] * spots[j].comfort / d

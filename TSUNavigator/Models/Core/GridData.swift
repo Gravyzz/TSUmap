@@ -106,7 +106,7 @@ class MapGridModel: ObservableObject {
         default: return .road
         }
     }
-    
+
     func cell(for coordinate: CLLocationCoordinate2D) -> Cell? {
         let mpLat = 111_000.0
         let mpLng = 111_000.0 * cos(origin.latitude * .pi / 180)
@@ -278,7 +278,7 @@ class MapGridModel: ObservableObject {
     func updateSelectedBuildingPlaces(for buildingCells: Set<Cell>) {
         selectedBuildingPlaces = places(in: buildingCells)
     }
-    
+
     func nearestWalkableEdge(of buildingCells: Set<Cell>,
                              to target: Cell,
                              grassWalkable: Bool) -> Cell? {

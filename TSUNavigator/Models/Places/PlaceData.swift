@@ -32,7 +32,7 @@ enum PlaceSection: String, Codable, CaseIterable {
 }
 
 enum PlaceCategory: String, Codable, CaseIterable {
-    // Food
+
     case vending    = "vending"
     case buffet     = "buffet"
     case cafeteria  = "cafeteria"
@@ -42,12 +42,12 @@ enum PlaceCategory: String, Codable, CaseIterable {
     case fastfood   = "fastfood"
     case gastrohall = "gastrohall"
     case shop       = "shop"
-    // Landmarks
+
     case museum     = "museum"
     case monument   = "monument"
     case garden     = "garden"
     case gallery    = "gallery"
-    // Coworking
+
     case library    = "library"
     case coworking  = "coworking"
     case studyroom  = "studyroom"

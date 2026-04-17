@@ -55,9 +55,7 @@ struct KMeansResult {
 struct MetricComparison {
     let euclidean: KMeansResult
     let manhattan: KMeansResult
-
     let conflictIndices: Set<Int>
-
     let conflicts: [(index: Int, eucCluster: Int, manCluster: Int)]
 }
 
@@ -66,6 +64,7 @@ final class KMeansAlgorithm {
     func run(points inputPoints: [ClusterPoint], k: Int,
              metric: DistanceMetric = .euclidean,
              maxIterations: Int = 50) -> KMeansResult {
+
         guard inputPoints.count >= k, k > 0 else {
             return KMeansResult(points: inputPoints, centroids: [], steps: [],
                                 iterations: 0, k: k, wcss: 0, metric: metric)
@@ -99,6 +98,7 @@ final class KMeansAlgorithm {
 
             let old = centroids
             centroids = update(points: points, k: k, old: centroids)
+
             converged = hasConverged(old: old, new: centroids)
 
             steps.append(KMeansStep(
@@ -119,10 +119,7 @@ final class KMeansAlgorithm {
 
     func compare(points: [ClusterPoint], k: Int) -> MetricComparison {
         let eucResult = run(points: points, k: k, metric: .euclidean)
-
         let manResult = run(points: points, k: k, metric: .manhattan)
-
-
 
         let mapping = mapClusters(from: manResult.points, to: eucResult.points, k: k)
         let remappedMan = manResult.points.map { p -> ClusterPoint in
@@ -195,10 +192,12 @@ final class KMeansAlgorithm {
 
     private func initKMeansPP(points: [ClusterPoint], k: Int, metric: DistanceMetric) -> [Centroid] {
         var centroids: [Centroid] = []
+
         let first = points.randomElement()!
         centroids.append(Centroid(id: 0, x: first.x, y: first.y))
 
         for i in 1..<k {
+
             let dists = points.map { p in centroids.map { c in dist(p, c, metric: metric) }.min()! }
             let total = dists.reduce(0, +)
             guard total > 0 else { break }

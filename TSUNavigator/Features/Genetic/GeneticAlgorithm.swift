@@ -87,6 +87,7 @@ final class GeneticAlgorithm {
         }
 
         let dist = externalDistMatrix ?? buildDistMatrix(candidates: candidates, startX: startX, startY: startY)
+
         var population = initPopulation(n: n)
         var steps: [GeneticStep] = []
         var globalBestRoute: [Int] = []
@@ -125,14 +126,18 @@ final class GeneticAlgorithm {
             onGeneration?(step)
 
             var newPop: [Individual] = []
+
             for i in 0..<min(eliteCount, population.count) {
                 newPop.append(population[i])
             }
 
             while newPop.count < populationSize {
+
                 let p1 = tournamentSelect(population)
                 let p2 = tournamentSelect(population)
+
                 var child = orderCrossover(p1.route, p2.route)
+
                 if Double.random(in: 0...1) < mutationRate {
                     swapMutate(&child)
                 }
@@ -165,7 +170,6 @@ final class GeneticAlgorithm {
             generations: generations
         )
     }
-
 
     private func decodeRoute(_ permutation: [Int],
                               candidates: [RouteCandidate],
@@ -209,7 +213,6 @@ final class GeneticAlgorithm {
         }
         return covered
     }
-
 
     private func buildDistMatrix(candidates: [RouteCandidate],
                                   startX: Double, startY: Double) -> [[Double]] {
@@ -256,6 +259,7 @@ final class GeneticAlgorithm {
                                        selectedDishes: selectedDishes)
             let totalDist = routeDistMeters(decoded, dist: dist)
             let totalTimeSec = totalDist / walkingSpeedMps
+            _ = totalTimeSec
             let covered = coveredDishes(decoded, candidates: candidates,
                                          selectedDishes: selectedDishes)
 

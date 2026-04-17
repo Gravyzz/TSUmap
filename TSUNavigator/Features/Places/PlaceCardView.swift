@@ -370,7 +370,7 @@ struct PlacesListView: View {
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
-                // Section picker
+
                 Picker("Раздел", selection: $selectedSection) {
                     ForEach(PlaceSection.allCases, id: \.self) { section in
                         Label(section.label, systemImage: section.icon)
@@ -381,7 +381,6 @@ struct PlacesListView: View {
                 .padding(.horizontal, 12)
                 .padding(.top, 8)
 
-                // Category filter chips
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
                         filterChip(nil, "Все")

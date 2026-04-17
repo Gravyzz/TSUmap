@@ -103,6 +103,7 @@ struct DigitModel: Codable {
         for hiddenIndex in 0..<hiddenSize {
             var sum = b1[hiddenIndex]
             for inputIndex in 0..<inputSize {
+
                 sum += input[inputIndex] * W1[inputIndex * hiddenSize + hiddenIndex]
             }
             hidden[hiddenIndex] = relu(sum)
@@ -122,6 +123,7 @@ struct DigitModel: Codable {
 
     func predict(_ input: [Float]) throws -> DigitPrediction {
         let probabilities = try predictProba(input)
+
         let predictedClass = probabilities.enumerated().max(by: { $0.element < $1.element })?.offset ?? 0
         let confidence = probabilities[predictedClass]
         return DigitPrediction(

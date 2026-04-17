@@ -1,6 +1,5 @@
 import Foundation
 
-
 struct TrainingSample: Identifiable {
     let id = UUID()
     let features: [String: String]
@@ -14,7 +13,6 @@ struct FeatureSchema {
     let values: [String]
     let valueLabels: [String: String]
 }
-
 
 final class DTNode: Identifiable {
     let id = UUID()
@@ -71,8 +69,6 @@ indirect enum DTNodeType {
                children: [(value: String, node: DTNode)])
 }
 
-
-
 struct CSVParseResult {
     let samples: [TrainingSample]
     let featureNames: [String]
@@ -85,6 +81,7 @@ struct CSVParseResult {
 enum CSVParser {
     static func parse(text: String) -> CSVParseResult {
         var errors: [String] = []
+
         let lines = text
             .split(whereSeparator: { $0 == "\n" || $0 == "\r" })
             .map { String($0).trimmingCharacters(in: .whitespaces) }
@@ -143,7 +140,6 @@ enum CSVParser {
             .map { String($0).trimmingCharacters(in: .whitespaces) }
     }
 }
-
 
 struct DTBuildStep {
     let depth: Int
@@ -206,6 +202,7 @@ final class DecisionTreeBuilder {
         }
 
         let groups = Dictionary(grouping: samples) { $0.features[best.0] ?? "?" }
+
         let remaining = features.filter { $0 != best.0 }
         let sortedKeys = groups.keys.sorted()
 
@@ -232,12 +229,15 @@ final class DecisionTreeBuilder {
         case .leaf:
             return root
         case .split(let feature, let gain, let children):
+
             let pruned = children.map { (v, c) -> (String, DTNode) in
                 (v, prune(c, minGain: minGain))
             }
+
             let allLeavesSameMajority = pruned.allSatisfy { (_, c) in
                 c.isLeaf && c.majorityLabel == root.majorityLabel
             }
+
             if allLeavesSameMajority || gain < minGain {
                 return DTNode(sampleCount: root.sampleCount,
                               entropy: root.entropy,
@@ -252,7 +252,6 @@ final class DecisionTreeBuilder {
                                        children: pruned.map { (value: $0.0, node: $0.1) }))
         }
     }
-
 
     func entropy(_ samples: [TrainingSample]) -> Double {
         guard !samples.isEmpty else { return 0 }
@@ -269,9 +268,11 @@ final class DecisionTreeBuilder {
     func informationGain(samples: [TrainingSample], feature: String) -> Double {
         let total = Double(samples.count)
         let h = entropy(samples)
+
         let groups = Dictionary(grouping: samples) { $0.features[feature] ?? "?" }
         var weighted = 0.0
         for (_, group) in groups {
+
             weighted += (Double(group.count) / total) * entropy(group)
         }
         return h - weighted
@@ -293,7 +294,6 @@ final class DecisionTreeBuilder {
         return Double(correct) / Double(samples.count)
     }
 }
-
 
 struct PredictionStep {
     let nodeId: UUID
@@ -320,6 +320,7 @@ enum DecisionTreePredictor {
         while true {
             switch node.type {
             case .leaf:
+
                 let total = node.labelCounts.values.reduce(0, +)
                 let conf = total > 0
                     ? Double(node.labelCounts[node.majorityLabel] ?? 0) / Double(total)
@@ -334,10 +335,12 @@ enum DecisionTreePredictor {
                 let value = query[feature] ?? ""
                 let chosen: DTNode
                 if let match = children.first(where: { $0.value == value }) {
+
                     chosen = match.node
                     path.append(PredictionStep(nodeId: node.id, childId: chosen.id,
                                                feature: feature, value: value))
                 } else {
+
                     unknown = true
                     guard let best = children.max(by: { $0.node.sampleCount < $1.node.sampleCount }) else {
                         return PredictionResult(label: node.majorityLabel,

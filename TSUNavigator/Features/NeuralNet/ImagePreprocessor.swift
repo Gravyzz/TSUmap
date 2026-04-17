@@ -16,9 +16,12 @@ enum ImagePreprocessorError: LocalizedError {
 }
 
 struct ImagePreprocessor {
+
     static let canvasSize = CGSize(width: 50, height: 50)
     private static let targetDimension = 50
+
     private static let threshold: Float = 0.05
+
     private static let contentInset: CGFloat = 4
 
     func preprocess(_ image: UIImage) throws -> [Float] {
@@ -27,11 +30,13 @@ struct ImagePreprocessor {
         }
 
         let grayscale = try makeGrayscaleBuffer(from: cgImage)
+
         guard let boundingBox = detectBoundingBox(in: grayscale) else {
             throw ImagePreprocessorError.emptyDrawing
         }
 
         let cropped = crop(grayscale, to: boundingBox)
+
         return drawCentered(cropped, sourceSize: boundingBox.size)
     }
 
@@ -66,7 +71,9 @@ struct ImagePreprocessor {
             let green = Float(rawBytes[base + 1]) / 255
             let blue = Float(rawBytes[base + 2]) / 255
             let alpha = Float(rawBytes[base + 3]) / 255
+
             let luminance = 0.299 * red + 0.587 * green + 0.114 * blue
+
             grayscale[index] = max(0, min(1, (1 - luminance) * alpha))
         }
 
@@ -124,16 +131,20 @@ struct ImagePreprocessor {
         let side = Self.targetDimension
         let croppedWidth = max(1, Int(sourceSize.width))
         let croppedHeight = max(1, Int(sourceSize.height))
+
         let usableSide = CGFloat(side) - Self.contentInset * 2
+
         let scale = min(usableSide / CGFloat(croppedWidth), usableSide / CGFloat(croppedHeight))
         let scaledWidth = max(1, Int(round(CGFloat(croppedWidth) * scale)))
         let scaledHeight = max(1, Int(round(CGFloat(croppedHeight) * scale)))
+
         let offsetX = (side - scaledWidth) / 2
         let offsetY = (side - scaledHeight) / 2
 
         var output = [Float](repeating: 0, count: side * side)
         for y in 0..<scaledHeight {
             for x in 0..<scaledWidth {
+
                 let sourceX = min(croppedWidth - 1, Int(CGFloat(x) / scale))
                 let sourceY = min(croppedHeight - 1, Int(CGFloat(y) / scale))
                 let value = cropped[sourceY * croppedWidth + sourceX]
@@ -144,4 +155,3 @@ struct ImagePreprocessor {
         return output
     }
 }
-
