@@ -61,7 +61,7 @@ struct ContentView: View {
             AntView(places: places, mapModel: mapModel)
                 .tag(Tab.walk)
                 .tabItem {
-                    Label("Прогулка", systemImage: "figure.walk")
+                    Label("Муравьи", systemImage: "ant")
                 }
 
             DecisionTreeView(places: places)

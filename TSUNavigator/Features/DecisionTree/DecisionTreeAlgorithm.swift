@@ -363,12 +363,13 @@ enum DecisionTreeDefaults {
         FeatureSchema(name: "location", title: "Где находится",
                       icon: "location.fill",
                       values: ["main_building", "second_building",
-                               "bus_stop", "campus_center"],
+                               "bus_stop", "campus_center", "off_campus"],
                       valueLabels: [
                         "main_building": "Главный корпус",
                         "second_building": "2-й корпус",
                         "bus_stop": "Остановка",
-                        "campus_center": "Центр кампуса"
+                        "campus_center": "Центр кампуса",
+                        "off_campus": "Вне кампуса"
                       ]),
         FeatureSchema(name: "budget", title: "Бюджет",
                       icon: "rublesign.circle.fill",
@@ -403,30 +404,76 @@ enum DecisionTreeDefaults {
 
     static let sampleCSV: String = """
 location,budget,time_available,food_type,queue_tolerance,weather,recommended_place
-main_building,low,short,coffee,low,good,Буфет №1
-main_building,low,short,coffee,medium,good,Буфет №1
-main_building,low,very_short,snack,low,good,Вендинг
-main_building,low,very_short,snack,medium,bad,Вендинг
-main_building,medium,medium,full_meal,high,good,Столовая ТГУ
-main_building,medium,medium,full_meal,medium,bad,Столовая ТГУ
-main_building,high,medium,full_meal,high,good,Ресторан Университетский
-main_building,medium,short,pancakes,medium,good,Теремок
-second_building,low,short,coffee,low,good,Буфет №2
-second_building,low,very_short,snack,low,bad,Вендинг
-second_building,medium,short,pancakes,medium,good,Теремок
-second_building,medium,medium,full_meal,high,good,Столовая №2
-second_building,high,medium,full_meal,medium,good,Кафе Каштан
-bus_stop,low,very_short,coffee,low,bad,Киоск Coffee Like
-bus_stop,low,very_short,snack,low,bad,Киоск Coffee Like
-bus_stop,medium,short,pancakes,medium,good,Теремок
-bus_stop,medium,short,coffee,medium,good,Кафе Каштан
-bus_stop,high,medium,full_meal,medium,bad,Кафе Каштан
-campus_center,low,short,coffee,medium,good,Буфет №1
-campus_center,low,very_short,snack,low,good,Вендинг
-campus_center,medium,medium,full_meal,medium,good,Столовая ТГУ
-campus_center,medium,short,pancakes,medium,good,Теремок
-campus_center,high,medium,full_meal,high,good,Ресторан Университетский
-campus_center,high,medium,full_meal,low,bad,Ресторан Университетский
+main_building,low,very_short,snack,low,bad,Автомат (Главный корпус)
+main_building,low,very_short,snack,low,good,Автомат (Главный корпус)
+main_building,low,very_short,snack,medium,bad,Автомат (Главный корпус)
+main_building,low,very_short,snack,medium,good,Автомат (Главный корпус)
+main_building,medium,short,pancakes,low,good,Сибирские блины
+main_building,medium,short,pancakes,medium,good,Сибирские блины
+main_building,medium,short,pancakes,high,good,Сибирские блины
+main_building,medium,short,pancakes,medium,bad,Сибирские блины
+main_building,low,medium,full_meal,high,good,Столовая ТГУ
+main_building,low,medium,full_meal,medium,bad,Столовая ТГУ
+main_building,low,medium,full_meal,medium,good,Столовая ТГУ
+main_building,medium,medium,full_meal,high,bad,Столовая ТГУ
+main_building,low,short,snack,low,good,Автомат (Главный корпус)
+main_building,medium,short,coffee,low,good,Сибирские блины
+main_building,medium,medium,coffee,low,good,Сибирские блины
+second_building,low,very_short,snack,low,bad,Автомат (2-й корпус)
+second_building,low,very_short,snack,low,good,Автомат (2-й корпус)
+second_building,low,very_short,snack,medium,bad,Автомат (2-й корпус)
+second_building,low,short,snack,low,good,Буфет (2-й корпус)
+second_building,low,short,snack,medium,good,Буфет (2-й корпус)
+second_building,low,short,snack,medium,bad,Буфет (2-й корпус)
+second_building,medium,short,coffee,medium,good,Буфет (2-й корпус)
+second_building,medium,medium,full_meal,medium,good,Кафе (2-й корпус)
+second_building,medium,medium,full_meal,high,good,Кафе (2-й корпус)
+second_building,medium,medium,full_meal,medium,bad,Кафе (2-й корпус)
+second_building,medium,medium,pancakes,medium,good,Кафе (2-й корпус)
+second_building,low,medium,full_meal,high,bad,Столовая ТГУ
+second_building,low,medium,full_meal,high,good,Столовая ТГУ
+campus_center,low,very_short,snack,low,bad,Автомат (Главный корпус)
+campus_center,low,very_short,snack,medium,good,Автомат (Главный корпус)
+campus_center,low,short,pancakes,low,good,Сибирские блины
+campus_center,low,short,pancakes,medium,good,Сибирские блины
+campus_center,medium,short,pancakes,medium,bad,Сибирские блины
+campus_center,low,medium,full_meal,high,good,Столовая ТГУ
+campus_center,low,medium,full_meal,medium,good,Столовая ТГУ
+campus_center,low,medium,full_meal,medium,bad,Столовая ТГУ
+campus_center,medium,short,coffee,low,good,Сибирские блины
+campus_center,low,short,snack,medium,good,Буфет (2-й корпус)
+bus_stop,low,very_short,snack,low,bad,Автомат (Главный корпус)
+bus_stop,low,very_short,snack,low,good,Автомат (Главный корпус)
+bus_stop,low,short,pancakes,medium,good,Сибирские блины
+bus_stop,low,short,pancakes,low,good,Сибирские блины
+bus_stop,medium,short,coffee,low,good,Сибирские блины
+bus_stop,low,medium,full_meal,high,good,Столовая ТГУ
+bus_stop,low,medium,full_meal,medium,good,Столовая ТГУ
+bus_stop,low,medium,full_meal,medium,bad,Столовая ТГУ
+off_campus,medium,short,coffee,low,good,Baba Roma
+off_campus,medium,short,coffee,medium,good,Baba Roma
+off_campus,high,short,coffee,low,good,Территория Кофе
+off_campus,high,short,coffee,medium,good,Территория Кофе
+off_campus,high,medium,coffee,low,good,Территория Кофе
+off_campus,medium,short,pancakes,medium,good,Багет Омлет
+off_campus,high,short,pancakes,low,good,Багет Омлет
+off_campus,high,medium,pancakes,medium,good,Багет Омлет
+off_campus,medium,short,snack,medium,good,Наш Гастроном
+off_campus,low,short,snack,low,good,Абрикос
+off_campus,medium,short,snack,low,good,Наш Гастроном
+off_campus,high,medium,full_meal,medium,good,Rostic's
+off_campus,high,medium,full_meal,high,good,Rostic's
+off_campus,high,short,full_meal,medium,bad,Rostic's
+off_campus,medium,medium,full_meal,medium,good,Сып-Бор
+off_campus,medium,medium,full_meal,high,good,Сып-Бор
+off_campus,medium,medium,full_meal,medium,bad,Сып-Бор
+off_campus,medium,medium,full_meal,high,good,Укромное местечко
+off_campus,medium,medium,full_meal,medium,good,Укромное местечко
+off_campus,low,medium,full_meal,high,good,Столовая НИ ТПУ
+off_campus,low,medium,full_meal,medium,good,Столовая НИ ТПУ
+off_campus,high,medium,full_meal,high,good,Лампочка
+off_campus,high,medium,full_meal,medium,good,Лампочка
+off_campus,high,medium,full_meal,high,bad,Лампочка
 """
 
     static func schema(for featureName: String,

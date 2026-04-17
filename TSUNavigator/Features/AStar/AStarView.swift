@@ -498,7 +498,7 @@ struct AStarView: View {
 
     func resetMapState() {
         cancelAnimations()
-        model.reset(removeBarriers: false)
+        model.reset(removeBarriers: true)
         pathLength = 0
         pathDistanceMeters = 0
         noPath = false
