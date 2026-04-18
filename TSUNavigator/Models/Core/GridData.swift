@@ -96,7 +96,6 @@ class MapGridModel: ObservableObject {
         availablePlaces = places
     }
 
-
     func terrainCellType(_ r: Int, _ c: Int) -> CellType {
         switch terrain[r][c] {
         case 0: return .road

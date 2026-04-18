@@ -177,4 +177,16 @@ final class AStarAlgorithm {
         }
         return path.reversed()
     }
+
+    static func pathLengthMeters(_ path: [Cell], cellMeters: Double) -> Double {
+        guard path.count > 1 else { return 0 }
+        var total: Double = 0
+        for i in 1..<path.count {
+            let dr = abs(path[i].row - path[i - 1].row)
+            let dc = abs(path[i].col - path[i - 1].col)
+            let step: Double = (dr != 0 && dc != 0) ? 1.41421356 : 1.0
+            total += step * cellMeters
+        }
+        return total
+    }
 }

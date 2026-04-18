@@ -179,7 +179,6 @@ final class GeneticModel: ObservableObject {
         let n = candidates.count + 1
         var dist = Array(repeating: Array(repeating: 0.0, count: n), count: n)
         var segments: [String: [CGPoint]] = [:]
-        let metersPerPixel = 7.3
 
         let startPx = CGPoint(x: startX, y: startY)
         let startCell = pixelToCell(startPx)
@@ -201,10 +200,7 @@ final class GeneticModel: ObservableObject {
         for i in 0..<n {
             for j in (i+1)..<n {
                 if let path = algo.findPath(in: snapshot, from: walkableCells[i], to: walkableCells[j]) {
-                    let pathLen = Double(path.count) * metersPerPixel *
-                        (Double(mapW) / Double(gridCols))
-                    let cellSize = mapModel.cellMeters
-                    let pathMeters = Double(path.count) * cellSize
+                    let pathMeters = AStarAlgorithm.pathLengthMeters(path, cellMeters: mapModel.cellMeters)
                     dist[i][j] = pathMeters
                     dist[j][i] = pathMeters
 

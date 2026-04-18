@@ -203,7 +203,7 @@ final class AntTSPModel: ObservableObject {
                 if let path = astar.findPath(in: snapshot,
                                              from: walkableCells[i],
                                              to: walkableCells[j]) {
-                    let pathMeters = Double(path.count) * cellMeters
+                    let pathMeters = AStarAlgorithm.pathLengthMeters(path, cellMeters: cellMeters)
                     dist[i][j] = pathMeters
                     dist[j][i] = pathMeters
 
@@ -355,7 +355,7 @@ final class AntCoworkingModel: ObservableObject {
 
             if let path = astar.findPath(in: snapshot,
                                          from: walkableStart, to: target) {
-                distances[j] = Double(path.count) * cellMeters
+                distances[j] = AStarAlgorithm.pathLengthMeters(path, cellMeters: cellMeters)
 
                 let step = max(1, path.count / 80)
                 var pixelPath = stride(from: 0, to: path.count, by: step).map {
