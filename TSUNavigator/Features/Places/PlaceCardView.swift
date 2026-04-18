@@ -37,7 +37,7 @@ struct PlaceCardView: View {
                         dismiss()
                         onShowOnMap()
                     } label: {
-                        Label("Показать на карте", systemImage: "map")
+                        Label(S.placeCard.pokazatNaKarte, systemImage: "map")
                             .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.borderedProminent)
@@ -45,7 +45,7 @@ struct PlaceCardView: View {
                     .disabled(!place.isShownOnCampusMap)
 
                     if !place.isShownOnCampusMap {
-                        Text("Это место не привязано к карте кампуса.")
+                        Text(S.placeCard.etoMestoNePrivjazanoKKarte)
                             .font(.caption)
                             .foregroundColor(.secondary)
                     }
@@ -54,7 +54,7 @@ struct PlaceCardView: View {
                         dismiss()
                         onRatePlace()
                     } label: {
-                        Label("Поставить оценку", systemImage: "pencil.and.scribble")
+                        Label(S.placeCard.postavitOcenku, systemImage: "pencil.and.scribble")
                             .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.borderedProminent)
@@ -64,7 +64,7 @@ struct PlaceCardView: View {
                         dismiss()
                         onBindBuilding()
                     } label: {
-                        Label("Привязать здание", systemImage: "building.2")
+                        Label(S.placeCard.privjazatZdanie, systemImage: "building.2")
                             .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.bordered)
@@ -81,7 +81,7 @@ struct PlaceCardView: View {
                         resetErrorMessage = nil
                         showResetAlert = true
                     } label: {
-                        Label("Сбросить оценку", systemImage: "trash")
+                        Label(S.placeCard.sbrositOcenku, systemImage: "trash")
                             .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.bordered)
@@ -96,19 +96,19 @@ struct PlaceCardView: View {
             }
             .navigationTitle(place.name)
             .navigationBarTitleDisplayMode(.inline)
-            .alert("Сбросить оценку", isPresented: $showResetAlert) {
-                TextField("Пароль", text: $resetPassword)
-                Button("Отмена", role: .cancel) {}
-                Button("Сбросить", role: .destructive) {
-                    if resetPassword == "Денис Змеев" {
+            .alert(S.placeCard.sbrositOcenku, isPresented: $showResetAlert) {
+                TextField(S.placeCard.parol, text: $resetPassword)
+                Button(S.placeCard.otmena, role: .cancel) {}
+                Button(S.placeCard.sbrosit, role: .destructive) {
+                    if resetPassword == S.placeCard.denisZmeev {
                         dismiss()
                         onResetRating()
                     } else {
-                        resetErrorMessage = "Неверный пароль."
+                        resetErrorMessage = S.placeCard.nevernyjParol
                     }
                 }
             } message: {
-                Text("Для сброса всех оценок введите пароль.")
+                Text(S.placeCard.dljaSbrosaVsehOcenokVvediteParol)
             }
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -184,7 +184,7 @@ struct PlaceCardView: View {
 
             chipView(
                 icon: isLikelyOpen ? "clock.badge.checkmark" : "clock.badge.xmark",
-                text: isLikelyOpen ? "Открыто" : "Закрыто",
+                text: isLikelyOpen ? S.placeCard.otkryto : S.placeCard.zakryto,
                 color: isLikelyOpen ? .green : .red
             )
         }
@@ -217,7 +217,7 @@ struct PlaceCardView: View {
 
     private var menuSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Меню")
+            Text(S.placeCard.menju)
                 .font(.headline)
 
             ForEach(place.menuByCategory, id: \.category) { group in
@@ -297,8 +297,8 @@ struct PlaceCardView: View {
         let weekday = Calendar.current.component(.weekday, from: Date())
         let isWeekend = (weekday == 1 || weekday == 7)
 
-        if place.schedule.note?.contains("Круглосуточно") == true { return true }
-        if place.schedule.note?.contains("Ежедневно") == true {
+        if place.schedule.note?.contains(S.placeCard.kruglosutochno) == true { return true }
+        if place.schedule.note?.contains(S.placeCard.ezhednevno) == true {
             return parseHours(place.schedule.note, hour: hour)
         }
 
@@ -371,7 +371,7 @@ struct PlacesListView: View {
         NavigationView {
             VStack(spacing: 0) {
 
-                Picker("Раздел", selection: $selectedSection) {
+                Picker(S.placeCard.razdel, selection: $selectedSection) {
                     ForEach(PlaceSection.allCases, id: \.self) { section in
                         Label(section.label, systemImage: section.icon)
                             .tag(section)
@@ -383,7 +383,7 @@ struct PlacesListView: View {
 
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
-                        filterChip(nil, "Все")
+                        filterChip(nil, S.placeCard.vse)
                         ForEach(categoriesForSection, id: \.self) { cat in
                             filterChip(cat, cat.label)
                         }
@@ -426,9 +426,9 @@ struct PlacesListView: View {
 
     private var searchPrompt: String {
         switch selectedSection {
-        case .food:      return "Поиск по названию или блюду"
-        case .landmark:  return "Поиск достопримечательности"
-        case .coworking: return "Поиск коворкинга"
+        case .food:      return S.placeCard.poiskPoNazvanijuIliBljudu
+        case .landmark:  return S.placeCard.poiskDostoprimechatelnosti
+        case .coworking: return S.placeCard.poiskKovorkinga
         }
     }
 

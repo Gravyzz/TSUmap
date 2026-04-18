@@ -138,7 +138,7 @@ final class GeneticModel: ObservableObject {
             guard let self = self else { return }
 
             DispatchQueue.main.async {
-                self.statusMessage = "Прокладка дорог A*..."
+                self.statusMessage = S.genetic.prokladkaDorogA
             }
 
             let (distMatrix, segments) = self.precomputeRoadPaths(
@@ -146,7 +146,7 @@ final class GeneticModel: ObservableObject {
 
             DispatchQueue.main.async {
                 self.roadSegments = segments
-                self.statusMessage = "Генетический алгоритм..."
+                self.statusMessage = S.genetic.geneticheskijAlgoritm
             }
 
             let algo = GeneticAlgorithm(populationSize: popSize, mutationRate: mutRate)
@@ -258,7 +258,7 @@ final class GeneticModel: ObservableObject {
         }
 
         guard let schedule = timeStr else {
-            if place.schedule.note?.lowercased().contains("круглосуточно") == true {
+            if place.schedule.note?.lowercased().contains(S.genetic.kruglosutochno) == true {
                 return nil
             }
             return nil
@@ -324,12 +324,12 @@ struct GeneticView: View {
                     }
                 }
             }
-            .navigationTitle("Маршрут за обедом")
+            .navigationTitle(S.genetic.marshrutZaObedom)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 if viewStep == .results {
                     ToolbarItem(placement: .navigationBarLeading) {
-                        Button("Блюда") {
+                        Button(S.genetic.bljuda) {
                             viewStep = .selectDishes
                             model.result = nil
                             model.liveStep = nil
@@ -339,12 +339,12 @@ struct GeneticView: View {
                 }
                 if viewStep == .pickStart {
                     ToolbarItem(placement: .navigationBarLeading) {
-                        Button("Назад") { viewStep = .selectDishes }
+                        Button(S.genetic.nazad) { viewStep = .selectDishes }
                             .font(.caption)
                     }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Сбросить") {
+                    Button(S.genetic.sbrosit) {
                         model.clear()
                         viewStep = .selectDishes
                     }
@@ -359,9 +359,9 @@ struct GeneticView: View {
             Image(systemName: "building.2.crop.circle")
                 .font(.system(size: 50))
                 .foregroundColor(.secondary)
-            Text("Нет привязанных заведений")
+            Text(S.genetic.netPrivjazannyhZavedenij)
                 .font(.title3.bold())
-            Text("Перейдите во вкладку «Еда» и привяжите заведения к зданиям на карте.")
+            Text(S.genetic.perejditeVoVkladkuEdaIPrivjazhite)
                 .font(.caption)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
@@ -373,9 +373,9 @@ struct GeneticView: View {
         VStack(spacing: 0) {
 
             VStack(spacing: 4) {
-                Text("Что вы хотите?")
+                Text(S.genetic.chtoVyHotite)
                     .font(.title3.bold())
-                Text("Выберите блюда, которые хотите приобрести")
+                Text(S.genetic.vyberiteBljudaKotoryeHotitePriobresti)
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
@@ -419,10 +419,10 @@ struct GeneticView: View {
                     }
                 }
 
-                DisclosureGroup("Параметры алгоритма") {
+                DisclosureGroup(S.genetic.parametryAlgoritma) {
                     VStack(spacing: 3) {
-                        paramSlider("Популяция", value: $model.populationSize, range: 40...200, step: 10)
-                        paramSlider("Поколения", value: $model.generations, range: 100...500, step: 50)
+                        paramSlider(S.genetic.populjacija, value: $model.populationSize, range: 40...200, step: 10)
+                        paramSlider(S.genetic.pokolenija, value: $model.generations, range: 100...500, step: 50)
                         HStack {
                             Text("Мутация: \(String(format: "%.0f%%", model.mutationRate * 100))")
                                 .font(.caption2).foregroundColor(.secondary)
@@ -437,7 +437,7 @@ struct GeneticView: View {
                 Button {
                     viewStep = .pickStart
                 } label: {
-                    Text("Выбрать стартовую точку")
+                    Text(S.genetic.vybratStartovujuTochku)
                         .font(.body.bold())
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 12)
@@ -475,7 +475,7 @@ struct GeneticView: View {
             HStack(spacing: 8) {
                 Image(systemName: model.startPlaced ? "checkmark.circle.fill" : "mappin.circle")
                     .foregroundColor(model.startPlaced ? .green : .blue)
-                Text(model.startPlaced ? "Старт выбран — нажмите «Построить маршрут»" : "Нажмите на карту, чтобы указать, где вы находитесь")
+                Text(model.startPlaced ? S.genetic.startVybranNazhmitePostroitMarshrut : S.genetic.nazhmiteNaKartuChtobyUkazatGde)
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
@@ -489,7 +489,7 @@ struct GeneticView: View {
                 viewStep = .results
                 model.run()
             } label: {
-                Text("Построить маршрут")
+                Text(S.genetic.postroitMarshrut)
                     .font(.body.bold())
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)
@@ -531,13 +531,13 @@ struct GeneticView: View {
                         .font(.caption)
                         .foregroundColor(.secondary)
                 } else {
-                    Text(model.statusMessage.isEmpty ? "Запуск..." : model.statusMessage)
+                    Text(model.statusMessage.isEmpty ? S.genetic.zapusk : model.statusMessage)
                         .font(.caption).foregroundColor(.secondary)
                 }
             } else if let r = model.result {
                 Image(systemName: r.missingDishes.isEmpty ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
                     .foregroundColor(r.missingDishes.isEmpty ? .green : .orange)
-                Text("Маршрут найден")
+                Text(S.genetic.marshrutNajden)
                     .font(.caption.bold())
             }
             Spacer()
@@ -563,18 +563,18 @@ struct GeneticView: View {
         VStack(alignment: .leading, spacing: 8) {
 
             HStack(spacing: 16) {
-                statItem("Время", value: "\(String(format: "%.0f", r.bestTime)) мин",
+                statItem(S.genetic.vremja, value: "\(String(format: "%.0f", r.bestTime)) мин",
                          icon: "clock", color: .blue)
-                statItem("Путь", value: "\(Int(r.bestDistance)) м",
+                statItem(S.genetic.put, value: "\(Int(r.bestDistance)) м",
                          icon: "figure.walk", color: .green)
-                statItem("Мест", value: "\(r.totalPlaces)",
+                statItem(S.genetic.mest, value: "\(r.totalPlaces)",
                          icon: "building.2", color: .orange)
             }
 
             if !r.bestRoute.isEmpty {
                 let cands = model.candidates
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Порядок обхода:")
+                    Text(S.genetic.porjadokObhoda)
                         .font(.caption2.bold())
                         .foregroundColor(.secondary)
                     ForEach(Array(r.bestRoute.enumerated()), id: \.offset) { i, candIdx in
@@ -835,7 +835,7 @@ final class StartPickerOverlay: UIView {
             icon.draw(in: CGRect(x: startPt.x - s/2, y: startPt.y - s/2, width: s, height: s))
         }
 
-        let label = "Вы здесь" as NSString
+        let label = S.genetic.vyZdes as NSString
         let labelAttrs: [NSAttributedString.Key: Any] = [
             .font: UIFont.boldSystemFont(ofSize: 9),
             .foregroundColor: UIColor.systemBlue,

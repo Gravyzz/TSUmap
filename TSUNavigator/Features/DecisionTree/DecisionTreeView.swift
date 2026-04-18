@@ -50,7 +50,7 @@ struct DecisionTreeView: View {
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
-            .navigationTitle("Советник")
+            .navigationTitle(S.decisionTree.sovetnik)
             .navigationBarTitleDisplayMode(.inline)
             .onAppear { if rawTree == nil { rebuildTree() } }
         }
@@ -115,7 +115,7 @@ struct DecisionTreeView: View {
                         Button {
                             runPrediction()
                         } label: {
-                            Text("Определить заведение")
+                            Text(S.decisionTree.opredelitZavedenie)
                                 .font(.body.bold())
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 12)
@@ -132,8 +132,8 @@ struct DecisionTreeView: View {
                     .padding(12)
                 }
             } else {
-                emptyView("Нет дерева",
-                          hint: "Перейдите на вкладку «Данные», чтобы добавить записи и перестроить дерево.")
+                emptyView(S.decisionTree.netDereva,
+                          hint: S.decisionTree.perejditeNaVkladkuDannyeChtobyDobavit)
             }
         }
     }
@@ -201,7 +201,7 @@ struct DecisionTreeView: View {
                     .font(.title2)
                     .foregroundColor(r.unknownBranch ? .orange : .green)
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Рекомендуется:")
+                    Text(S.decisionTree.rekomenduetsja)
                         .font(.caption2).foregroundColor(.secondary)
                     Text(r.label)
                         .font(.title3.bold())
@@ -213,7 +213,7 @@ struct DecisionTreeView: View {
             }
 
             if r.unknownBranch {
-                Text("Некоторые ответы не встречались в обучающей выборке — прошли через наиболее вероятную ветку.")
+                Text(S.decisionTree.nekotoryeOtvetyNeVstrechalisVObuchajushej)
                     .font(.caption2).foregroundColor(.orange)
             }
 
@@ -228,7 +228,7 @@ struct DecisionTreeView: View {
             Divider()
 
             VStack(alignment: .leading, spacing: 4) {
-                Text("Путь по дереву:").font(.caption.bold()).foregroundColor(.secondary)
+                Text(S.decisionTree.putPoDerevu).font(.caption.bold()).foregroundColor(.secondary)
                 ForEach(Array(r.path.enumerated()), id: \.offset) { i, step in
                     let schema = DecisionTreeDefaults.schema(for: step.feature,
                                                               parsed: parseResult.featureValues[step.feature])
@@ -247,7 +247,7 @@ struct DecisionTreeView: View {
                 HStack(spacing: 6) {
                     Image(systemName: "checkmark.circle.fill")
                         .font(.caption).foregroundColor(.green)
-                    Text("Лист")
+                    Text(S.decisionTree.list)
                         .font(.caption).foregroundColor(.secondary)
                     Spacer()
                     Text(r.label).font(.caption.bold())
@@ -275,8 +275,8 @@ struct DecisionTreeView: View {
 
                 bottomSheet
             } else {
-                emptyView("Нет данных",
-                          hint: "Перейдите на вкладку «Данные» и добавьте записи.")
+                emptyView(S.decisionTree.netDannyh,
+                          hint: S.decisionTree.perejditeNaVkladkuDannyeIDobavte)
             }
         }
     }
@@ -295,7 +295,7 @@ struct DecisionTreeView: View {
                     HStack(spacing: 6) {
                         Image(systemName: bottomSheetExpanded ? "chevron.down" : "chevron.up")
                             .font(.caption2)
-                        Text(bottomSheetExpanded ? "Свернуть параметры" : "Параметры построения")
+                        Text(bottomSheetExpanded ? S.decisionTree.svernutParametry : S.decisionTree.parametryPostroenija)
                             .font(.caption2)
                     }
                     .foregroundColor(.secondary)
@@ -319,13 +319,13 @@ struct DecisionTreeView: View {
                 ScrollView {
                     VStack(spacing: 10) {
                         VStack(spacing: 6) {
-                            Text("Параметры построения")
+                            Text(S.decisionTree.parametryPostroenija)
                                 .font(.caption2.bold())
                                 .foregroundColor(.secondary)
                                 .frame(maxWidth: .infinity, alignment: .leading)
-                            slider("Макс. глубина", value: $maxDepth, range: 2...10, step: 1)
-                            slider("Мин. образцов в листе", value: $minSamplesLeaf, range: 1...10, step: 1)
-                            slider("Мин. IG для ветвления", value: $minInfoGain, range: 0...0.3, step: 0.01,
+                            slider(S.decisionTree.maksGlubina, value: $maxDepth, range: 2...10, step: 1)
+                            slider(S.decisionTree.minObrazcovVListe, value: $minSamplesLeaf, range: 1...10, step: 1)
+                            slider(S.decisionTree.minIgDljaVetvlenija, value: $minInfoGain, range: 0...0.3, step: 0.01,
                                    format: "%.2f")
                         }
                         .padding(10)
@@ -333,13 +333,13 @@ struct DecisionTreeView: View {
                         .clipShape(RoundedRectangle(cornerRadius: 10))
 
                         VStack(spacing: 6) {
-                            Text("Оптимизация размера (пост-обрезка)")
+                            Text(S.decisionTree.optimizacijaRazmeraPostObrezka)
                                 .font(.caption2.bold())
                                 .foregroundColor(.secondary)
                                 .frame(maxWidth: .infinity, alignment: .leading)
-                            Toggle("Сливать избыточные ветки", isOn: $postPruneEnabled)
+                            Toggle(S.decisionTree.slivatIzbytochnyeVetki, isOn: $postPruneEnabled)
                                 .font(.caption)
-                            slider("Мин. IG для сохранения", value: $postPruneGain,
+                            slider(S.decisionTree.minIgDljaSohranenija, value: $postPruneGain,
                                    range: 0...0.3, step: 0.01, format: "%.2f")
                                 .disabled(!postPruneEnabled)
                         }
@@ -350,7 +350,7 @@ struct DecisionTreeView: View {
                         Button {
                             rebuildTree()
                         } label: {
-                            Text("Применить")
+                            Text(S.decisionTree.primenit)
                                 .font(.caption.bold())
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 10)
@@ -372,10 +372,10 @@ struct DecisionTreeView: View {
 
     private func treeStatsBar(tree: DTNode) -> some View {
         HStack(spacing: 12) {
-            stat("Узлов", value: "\(tree.nodeCount)", icon: "circle.grid.2x2.fill", color: .blue)
-            stat("Листьев", value: "\(tree.leafCount)", icon: "leaf.fill", color: .green)
-            stat("Глубина", value: "\(tree.depth)", icon: "arrow.down.to.line", color: .purple)
-            stat("Точность", value: "\(Int(trainingAccuracy * 100))%",
+            stat(S.decisionTree.uzlov, value: "\(tree.nodeCount)", icon: "circle.grid.2x2.fill", color: .blue)
+            stat(S.decisionTree.listev, value: "\(tree.leafCount)", icon: "leaf.fill", color: .green)
+            stat(S.decisionTree.glubina, value: "\(tree.depth)", icon: "arrow.down.to.line", color: .purple)
+            stat(S.decisionTree.tochnost, value: "\(Int(trainingAccuracy * 100))%",
                  icon: "checkmark.seal.fill", color: .orange)
         }
     }
@@ -388,7 +388,7 @@ struct DecisionTreeView: View {
                         HStack(spacing: 6) {
                             Image(systemName: "lock.fill")
                                 .font(.caption2).foregroundColor(.secondary)
-                            Text("Базовая выборка (только чтение)")
+                            Text(S.decisionTree.bazovajaVyborkaTolkoChtenie)
                                 .font(.caption.bold()).foregroundColor(.secondary)
                             Spacer()
                             let baseCount = baseCSV.split(separator: "\n").count - 1
@@ -411,7 +411,7 @@ struct DecisionTreeView: View {
                         HStack(spacing: 6) {
                             Image(systemName: "plus.circle.fill")
                                 .font(.caption2).foregroundColor(.blue)
-                            Text("Добавить новые записи")
+                            Text(S.decisionTree.dobavitNovyeZapisi)
                                 .font(.caption.bold()).foregroundColor(.blue)
                             Spacer()
                             Button {
@@ -423,13 +423,13 @@ struct DecisionTreeView: View {
                                     }
                                 }
                             } label: {
-                                Label("Вставить", systemImage: "doc.on.clipboard")
+                                Label(S.decisionTree.vstavit, systemImage: "doc.on.clipboard")
                                     .font(.caption2.bold())
                             }
                             Button {
                                 additionalCSV = ""
                             } label: {
-                                Label("Очистить", systemImage: "trash")
+                                Label(S.decisionTree.ochistit, systemImage: "trash")
                                     .font(.caption2.bold())
                                     .foregroundColor(.red)
                             }
@@ -449,7 +449,7 @@ struct DecisionTreeView: View {
                                         .stroke(Color.blue.opacity(0.4), lineWidth: 1)
                                 )
                             if additionalCSV.isEmpty {
-                                Text("bus_stop,low,short,coffee,low,good,Буфет №1")
+                                Text(S.decisionTree.busStopLowShortCoffeeLow)
                                     .font(.system(size: 12, design: .monospaced))
                                     .foregroundColor(.secondary.opacity(0.6))
                                     .padding(.horizontal, 12)
@@ -458,7 +458,7 @@ struct DecisionTreeView: View {
                             }
                         }
 
-                        Text("Колонки: location, budget, time_available, food_type, queue_tolerance, weather, recommended_place (заголовок не нужен — берётся из базовой выборки)")
+                        Text(S.decisionTree.kolonkiLocationBudgetTimeAvailableFood)
                             .font(.system(size: 10))
                             .foregroundColor(.secondary)
                     }
@@ -494,7 +494,7 @@ struct DecisionTreeView: View {
                 rebuildTree()
                 if shownTree != nil { stage = .tree }
             } label: {
-                Text("Перестроить дерево")
+                Text(S.decisionTree.perestroitDerevo)
                     .font(.body.bold())
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 12)

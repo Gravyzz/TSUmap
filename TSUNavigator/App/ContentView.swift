@@ -5,6 +5,7 @@ struct ContentView: View {
     @StateObject private var mapModel = loadGridModel(filename: "campus-grid")
     @State private var selectedTab: Tab = .map
     @State private var selectedRatingPlaceID: String?
+    @EnvironmentObject private var locale: LocaleManager
 
     private enum Tab {
         case map
@@ -14,6 +15,7 @@ struct ContentView: View {
         case walk
         case advisor
         case neuralNet
+        case settings
     }
 
     var body: some View {
@@ -27,7 +29,7 @@ struct ContentView: View {
             }
                 .tag(Tab.map)
                 .tabItem {
-                    Label("Маршрут", systemImage: "map")
+                    Label(S.content.marshrut, systemImage: "map")
                 }
 
             PlacesListView(places: places) { place in
@@ -43,31 +45,31 @@ struct ContentView: View {
             }
             .tag(Tab.food)
                 .tabItem {
-                    Label("Места", systemImage: "mappin.and.ellipse")
+                    Label(S.content.mesta, systemImage: "mappin.and.ellipse")
                 }
 
             ClusteringView(places: places)
                 .tag(Tab.cafe)
                 .tabItem {
-                    Label("Кафе", systemImage: "fork.knife")
+                    Label(S.content.kafe, systemImage: "fork.knife")
                 }
 
             GeneticView(places: places, mapModel: mapModel)
                 .tag(Tab.lunch)
                 .tabItem {
-                    Label("Обед", systemImage: "bag")
+                    Label(S.content.obed, systemImage: "bag")
                 }
 
             AntView(places: places, mapModel: mapModel)
                 .tag(Tab.walk)
                 .tabItem {
-                    Label("Муравьи", systemImage: "ant")
+                    Label(S.content.muravi, systemImage: "ant")
                 }
 
             DecisionTreeView(places: places)
                 .tag(Tab.advisor)
                 .tabItem {
-                    Label("Советник", systemImage: "lightbulb")
+                    Label(S.content.sovetnik, systemImage: "lightbulb")
                 }
 
             NeuralNetView(
@@ -78,7 +80,13 @@ struct ContentView: View {
             }
                 .tag(Tab.neuralNet)
                 .tabItem {
-                    Label("Нейросеть", systemImage: "hand.draw")
+                    Label(S.content.nejroset, systemImage: "hand.draw")
+                }
+
+            SettingsView()
+                .tag(Tab.settings)
+                .tabItem {
+                    Label(S.settings.nastrojki, systemImage: "gearshape")
                 }
         }
         .onAppear {

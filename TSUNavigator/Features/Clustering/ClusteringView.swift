@@ -73,7 +73,7 @@ struct ClusteringView: View {
                         .padding(.bottom, 6)
                 }
             }
-            .navigationTitle("Кластеризация")
+            .navigationTitle(S.clustering.klasterizacija)
             .navigationBarTitleDisplayMode(.inline)
         }
     }
@@ -107,7 +107,7 @@ struct ClusteringView: View {
             return "Точек: \(clusterModel.points.count) · K=\(r.k) · \(r.metric.rawValue)"
         }
         if clusterModel.points.isEmpty {
-            return "Нажимайте на карту, чтобы расставить точки"
+            return S.clustering.nazhimajteNaKartuChtobyRasstavitTochki
         }
         return "Точек: \(clusterModel.points.count) — нажмите кнопку"
     }
@@ -132,7 +132,7 @@ struct ClusteringView: View {
                     clusterModel.comparison = nil
                     clusterModel.result = algo.run(points: clusterModel.points, k: k, metric: .euclidean)
                 } label: {
-                    Text("Евклидово")
+                    Text(S.clustering.evklidovo)
                         .font(.subheadline.bold())
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 10)
@@ -146,7 +146,7 @@ struct ClusteringView: View {
                     clusterModel.comparison = nil
                     clusterModel.result = algo.run(points: clusterModel.points, k: k, metric: .manhattan)
                 } label: {
-                    Text("Манхэттен")
+                    Text(S.clustering.manhetten)
                         .font(.subheadline.bold())
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 10)
@@ -164,7 +164,7 @@ struct ClusteringView: View {
                     clusterModel.result = cmp.euclidean
                     clusterModel.comparison = cmp
                 } label: {
-                    Label("Сравнить метрики", systemImage: "arrow.triangle.branch")
+                    Label(S.clustering.sravnitMetriki, systemImage: "arrow.triangle.branch")
                         .font(.subheadline.bold())
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 10)
@@ -241,7 +241,7 @@ struct ClusteringView: View {
                 HStack(spacing: 6) {
                     Image(systemName: "checkmark.circle.fill")
                         .foregroundColor(.green)
-                    Text("Обе метрики дали одинаковый результат!")
+                    Text(S.clustering.obeMetrikiDaliOdinakovyjRezultat)
                         .font(.caption.bold())
                 }
             } else {
@@ -269,7 +269,7 @@ struct ClusteringView: View {
                     }
                 }
 
-                Text("Конфликтные точки обведены пунктиром на карте")
+                Text(S.clustering.konfliktnyeTochkiObvedenyPunktiromNaKarte)
                     .font(.caption2)
                     .foregroundColor(.secondary)
             }

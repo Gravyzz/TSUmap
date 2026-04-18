@@ -32,7 +32,7 @@ struct NeuralNetView: View {
                 }
                 .scrollDisabled(isDrawing)
             }
-            .navigationTitle("Нейронная сеть")
+            .navigationTitle(S.neuralNet.nejronnajaSet)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -61,7 +61,7 @@ struct NeuralNetView: View {
     private func canvasSection(canvasSide: CGFloat) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text("Введите оценку")
+                Text(S.neuralNet.vvediteOcenku)
                     .font(.headline)
                 Spacer()
                 Text("50×50")
@@ -84,7 +84,7 @@ struct NeuralNetView: View {
                 )
                 .frame(maxWidth: .infinity)
 
-            Text("Нарисуйте одну цифру крупно и по центру.")
+            Text(S.neuralNet.narisujteOdnuCifruKrupnoIPo)
                 .font(.caption)
                 .foregroundColor(.secondary)
 
@@ -99,11 +99,11 @@ struct NeuralNetView: View {
 
     private var placeSelectionSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Кому ставим оценку")
+            Text(S.neuralNet.komuStavimOcenku)
                 .font(.headline)
 
-            Picker("Заведение", selection: ratingPlaceBinding) {
-                Text("Выберите заведение").tag(String?.none)
+            Picker(S.neuralNet.zavedenie, selection: ratingPlaceBinding) {
+                Text(S.neuralNet.vyberiteZavedenie).tag(String?.none)
                 ForEach(places) { place in
                     Text(place.name).tag(Optional(place.id))
                 }
@@ -114,7 +114,7 @@ struct NeuralNetView: View {
                 HStack(spacing: 6) {
                     Image(systemName: "star.fill")
                         .foregroundColor(.orange)
-                    Text(selectedPlace.rating.map { String(format: "%.1f", $0) } ?? "Нет оценок")
+                    Text(selectedPlace.rating.map { String(format: "%.1f", $0) } ?? S.neuralNet.netOcenok)
                         .font(.subheadline.weight(.semibold))
                     Text("· \(selectedPlace.ratingsCount) оценок")
                         .font(.caption)
@@ -171,7 +171,7 @@ struct NeuralNetView: View {
                 Button {
                     submitRecognizedRating(predictedDigit)
                 } label: {
-                    Label("Поставить оценку", systemImage: "checkmark.circle.fill")
+                    Label(S.neuralNet.postavitOcenku, systemImage: "checkmark.circle.fill")
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
@@ -188,7 +188,7 @@ struct NeuralNetView: View {
             .background(Color(.secondarySystemBackground))
             .clipShape(RoundedRectangle(cornerRadius: 18))
         } else if viewModel.model != nil {
-            Text("Начните рисовать цифру, результат появится автоматически.")
+            Text(S.neuralNet.nachniteRisovatCifruRezultatPojavitsjaAvtomatich)
                 .font(.subheadline)
                 .foregroundColor(.secondary)
                 .frame(maxWidth: .infinity, alignment: .leading)

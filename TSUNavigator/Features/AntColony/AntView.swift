@@ -118,7 +118,7 @@ final class AntTSPModel: ObservableObject {
         result = nil
         liveStep = nil
         roadSegments = [:]
-        statusMessage = "Прокладка дорог A*..."
+        statusMessage = S.ant.prokladkaDorogA
 
         let placesSnap = selectedPlaces
         let ants = Int(antCount)
@@ -141,7 +141,7 @@ final class AntTSPModel: ObservableObject {
 
             DispatchQueue.main.async {
                 self.roadSegments = segments
-                self.statusMessage = "Муравьиный алгоритм..."
+                self.statusMessage = S.ant.muravinyjAlgoritm
             }
 
             let algo = AntColonyAlgorithm(antCount: ants, alpha: 1.0, beta: 4.0,
@@ -281,7 +281,7 @@ final class AntCoworkingModel: ObservableObject {
         isRunning = true
         result = nil
         roadSegments = [:]
-        statusMessage = "Прокладка дорог A*..."
+        statusMessage = S.ant.prokladkaDorogA
 
         let spotsSnap = spots
         let count = studentCount
@@ -305,7 +305,7 @@ final class AntCoworkingModel: ObservableObject {
 
             DispatchQueue.main.async {
                 self.roadSegments = segments
-                self.statusMessage = "Муравьиный алгоритм..."
+                self.statusMessage = S.ant.muravinyjAlgoritm
             }
 
             let algo = AntColonyAlgorithm(antCount: ants, alpha: 1.0, beta: 3.0,
@@ -405,9 +405,9 @@ struct AntView: View {
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
-                Picker("Режим", selection: $mode) {
-                    Text("Прогулка").tag(AntMode.walk)
-                    Text("Коворкинг").tag(AntMode.coworking)
+                Picker(S.ant.rezhim, selection: $mode) {
+                    Text(S.ant.progulka).tag(AntMode.walk)
+                    Text(S.ant.kovorking).tag(AntMode.coworking)
                 }
                 .pickerStyle(.segmented)
                 .padding(.horizontal, 12)
@@ -427,12 +427,12 @@ struct AntView: View {
                     coworkingContent
                 }
             }
-            .navigationTitle(mode == .walk ? "Прогулка" : "Коворкинг")
+            .navigationTitle(mode == .walk ? S.ant.progulka : S.ant.kovorking)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     if mode == .walk && walkStep != .selectLandmarks {
-                        Button("Назад") {
+                        Button(S.ant.nazad) {
                             switch walkStep {
                             case .pickStart: walkStep = .selectLandmarks
                             case .results: walkStep = .pickStart
@@ -443,7 +443,7 @@ struct AntView: View {
                         }
                         .font(.caption)
                     } else if mode == .coworking && coworkingStep == .results {
-                        Button("Назад") {
+                        Button(S.ant.nazad) {
                             coworkingStep = .pickStart
                             cwModel.result = nil
                         }
@@ -451,7 +451,7 @@ struct AntView: View {
                     }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Сбросить") {
+                    Button(S.ant.sbrosit) {
                         if mode == .walk {
                             tspModel.clear()
                             walkStep = .selectLandmarks
@@ -470,8 +470,8 @@ struct AntView: View {
     private var walkContent: some View {
         if tspModel.landmarks.isEmpty {
             emptyView(icon: "building.columns",
-                      title: "Нет достопримечательностей",
-                      hint: "Достопримечательности должны быть привязаны к корпусу на карте.")
+                      title: S.ant.netDostoprimechatelnostej,
+                      hint: S.ant.dostoprimechatelnostiDolzhnyBytPrivjazanyKKorpus)
         } else {
             switch walkStep {
             case .selectLandmarks:
@@ -487,9 +487,9 @@ struct AntView: View {
     private var walkSelectionView: some View {
         VStack(spacing: 0) {
             VStack(spacing: 4) {
-                Text("Маршрут по университетской роще")
+                Text(S.ant.marshrutPoUniversitetskojRoshe)
                     .font(.title3.bold())
-                Text("Выберите достопримечательности для обхода")
+                Text(S.ant.vyberiteDostoprimechatelnostiDljaObhoda)
                     .font(.caption).foregroundColor(.secondary)
             }
             .padding(.top, 8)
@@ -509,7 +509,7 @@ struct AntView: View {
                         .font(.caption.bold())
                     Spacer()
                     if !tspModel.selectedPlaces.isEmpty {
-                        Button("Очистить") {
+                        Button(S.ant.ochistit) {
                             tspModel.selectedPlaces = []
                             tspModel.result = nil
                         }
@@ -521,7 +521,7 @@ struct AntView: View {
                 Button {
                     walkStep = .pickStart
                 } label: {
-                    Text("Указать стартовую точку")
+                    Text(S.ant.ukazatStartovujuTochku)
                         .font(.body.bold())
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 12)
@@ -532,7 +532,7 @@ struct AntView: View {
                 .disabled(tspModel.selectedPlaces.isEmpty)
 
                 if tspModel.selectedPlaces.isEmpty {
-                    Text("Выберите хотя бы одну достопримечательность")
+                    Text(S.ant.vyberiteHotjaByOdnuDostoprimechatelnost)
                         .font(.caption2).foregroundColor(.secondary)
                 }
             }
@@ -579,8 +579,8 @@ struct AntView: View {
                 Image(systemName: tspModel.startPlaced ? "checkmark.circle.fill" : "mappin.circle")
                     .foregroundColor(tspModel.startPlaced ? .green : .purple)
                 Text(tspModel.startPlaced
-                     ? "Старт выбран — нажмите «Построить маршрут»"
-                     : "Нажмите на карту, чтобы указать, где вы находитесь")
+                     ? S.ant.startVybranNazhmitePostroitMarshrut
+                     : S.ant.nazhmiteNaKartuChtobyUkazatGde)
                     .font(.caption).foregroundColor(.secondary)
             }
             .padding(.horizontal, 12).padding(.vertical, 8)
@@ -590,14 +590,14 @@ struct AntView: View {
 
             ScrollView {
                 VStack(spacing: 8) {
-                    DisclosureGroup("Параметры муравьиного алгоритма") {
+                    DisclosureGroup(S.ant.parametryMuravinogoAlgoritma) {
                         VStack(spacing: 4) {
-                            paramSlider("Муравьи",
+                            paramSlider(S.ant.muravi,
                                         value: Binding(
                                             get: { tspModel.antCount },
                                             set: { tspModel.antCount = $0 }),
                                         range: 10...100, step: 5)
-                            paramSlider("Итерации",
+                            paramSlider(S.ant.iteracii,
                                         value: Binding(
                                             get: { tspModel.iterations },
                                             set: { tspModel.iterations = $0 }),
@@ -610,7 +610,7 @@ struct AntView: View {
                         walkStep = .results
                         tspModel.run()
                     } label: {
-                        Text("Построить маршрут")
+                        Text(S.ant.postroitMarshrut)
                             .font(.body.bold())
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 12)
@@ -653,12 +653,12 @@ struct AntView: View {
                     Text("Поколение \(step.iteration) · лучший \(Int(step.bestDistance)) м")
                         .font(.caption).foregroundColor(.secondary)
                 } else {
-                    Text(tspModel.statusMessage.isEmpty ? "Запуск..." : tspModel.statusMessage)
+                    Text(tspModel.statusMessage.isEmpty ? S.ant.zapusk : tspModel.statusMessage)
                         .font(.caption).foregroundColor(.secondary)
                 }
             } else if tspModel.result != nil {
                 Image(systemName: "checkmark.circle.fill").foregroundColor(.purple)
-                Text("Маршрут найден").font(.caption.bold())
+                Text(S.ant.marshrutNajden).font(.caption.bold())
             }
             Spacer()
         }
@@ -683,17 +683,17 @@ struct AntView: View {
     private func walkRouteSummary(_ r: AntResult) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 16) {
-                statItem("Длина", value: "\(Int(r.bestDistance)) м",
+                statItem(S.ant.dlina, value: "\(Int(r.bestDistance)) м",
                          icon: "ruler", color: .purple)
-                statItem("Точек", value: "\(tspModel.selectedPlaces.count)",
+                statItem(S.ant.tochek, value: "\(tspModel.selectedPlaces.count)",
                          icon: "mappin", color: .blue)
                 let minutes = r.bestDistance / (5000.0 / 60.0)
-                statItem("Время", value: "≈\(Int(minutes)) мин",
+                statItem(S.ant.vremja, value: "≈\(Int(minutes)) мин",
                          icon: "clock", color: .green)
             }
 
             VStack(alignment: .leading, spacing: 4) {
-                Text("Порядок обхода:")
+                Text(S.ant.porjadokObhoda)
                     .font(.caption2.bold()).foregroundColor(.secondary)
                 ForEach(Array(r.bestRoute.enumerated()), id: \.offset) { i, idx in
                     let placeIdx = idx - 1
@@ -721,8 +721,8 @@ struct AntView: View {
     private var coworkingContent: some View {
         if cwModel.spots.isEmpty {
             emptyView(icon: "laptopcomputer",
-                      title: "Нет коворкингов",
-                      hint: "Коворкинги должны быть привязаны к корпусам на карте.")
+                      title: S.ant.netKovorkingov,
+                      hint: S.ant.kovorkingiDolzhnyBytPrivjazanyKKorpusam)
         } else {
             switch coworkingStep {
             case .pickStart, .selectLandmarks:
@@ -739,8 +739,8 @@ struct AntView: View {
                 Image(systemName: cwModel.startPlaced ? "checkmark.circle.fill" : "mappin.circle")
                     .foregroundColor(cwModel.startPlaced ? .green : .teal)
                 Text(cwModel.startPlaced
-                     ? "Точка студентов выбрана"
-                     : "Нажмите на карту — где сейчас находится группа")
+                     ? S.ant.tochkaStudentovVybrana
+                     : S.ant.nazhmiteNaKartuGdeSejchasNahoditsja)
                     .font(.caption).foregroundColor(.secondary)
             }
             .padding(.horizontal, 12).padding(.vertical, 8)
@@ -775,14 +775,14 @@ struct AntView: View {
                         }
                     }
 
-                    DisclosureGroup("Параметры муравьиного алгоритма") {
+                    DisclosureGroup(S.ant.parametryMuravinogoAlgoritma) {
                         VStack(spacing: 4) {
-                            paramSlider("Муравьи",
+                            paramSlider(S.ant.muravi,
                                         value: Binding(
                                             get: { cwModel.antCount },
                                             set: { cwModel.antCount = $0 }),
                                         range: 10...100, step: 5)
-                            paramSlider("Итерации",
+                            paramSlider(S.ant.iteracii,
                                         value: Binding(
                                             get: { cwModel.iterations },
                                             set: { cwModel.iterations = $0 }),
@@ -795,7 +795,7 @@ struct AntView: View {
                         coworkingStep = .results
                         cwModel.run()
                     } label: {
-                        Text("Распределить студентов")
+                        Text(S.ant.raspredelitStudentov)
                             .font(.body.bold())
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 12)
@@ -831,11 +831,11 @@ struct AntView: View {
         HStack(spacing: 6) {
             if cwModel.isRunning {
                 ProgressView().controlSize(.small)
-                Text(cwModel.statusMessage.isEmpty ? "Запуск..." : cwModel.statusMessage)
+                Text(cwModel.statusMessage.isEmpty ? S.ant.zapusk : cwModel.statusMessage)
                     .font(.caption).foregroundColor(.secondary)
             } else if cwModel.result != nil {
                 Image(systemName: "checkmark.circle.fill").foregroundColor(.teal)
-                Text("Распределение готово").font(.caption.bold())
+                Text(S.ant.raspredelenieGotovo).font(.caption.bold())
             }
             Spacer()
         }
@@ -845,19 +845,19 @@ struct AntView: View {
         let placed = r.allocations.reduce(0, +) - r.overflow
         return VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 12) {
-                statItem("Размещено", value: "\(placed)",
+                statItem(S.ant.razmesheno, value: "\(placed)",
                          icon: "person.3.fill", color: .teal)
                 if r.overflow > 0 {
-                    statItem("Переполнение", value: "+\(r.overflow)",
+                    statItem(S.ant.perepolnenie, value: "+\(r.overflow)",
                              icon: "exclamationmark.triangle.fill", color: .orange)
                 }
                 let used = r.allocations.enumerated().filter { $0.element > 0 }.count
-                statItem("Точек", value: "\(used)",
+                statItem(S.ant.tochek, value: "\(used)",
                          icon: "checkmark.seal", color: .green)
             }
 
             VStack(alignment: .leading, spacing: 4) {
-                Text("Распределение:")
+                Text(S.ant.raspredelenie)
                     .font(.caption2.bold()).foregroundColor(.secondary)
                 ForEach(Array(zip(cwModel.spots, r.allocations)), id: \.0.id) { spot, count in
                     let dist = Int(r.distances[spot.id])
@@ -1428,7 +1428,7 @@ private func drawStartMarker(ctx: CGContext, x: Double, y: Double) {
         icon.draw(in: CGRect(x: pos.x - s / 2, y: pos.y - s / 2, width: s, height: s))
     }
 
-    let label = "Вы здесь" as NSString
+    let label = S.ant.vyZdes as NSString
     let attrs: [NSAttributedString.Key: Any] = [
         .font: UIFont.boldSystemFont(ofSize: 9),
         .foregroundColor: UIColor.systemBlue,
@@ -1460,7 +1460,7 @@ private func drawGroupMarker(ctx: CGContext, x: Double, y: Double, count: Int) {
     label.draw(at: CGPoint(x: pos.x - sz.width / 2, y: pos.y - sz.height / 2),
                withAttributes: attrs)
 
-    let title = "Группа" as NSString
+    let title = S.ant.gruppa as NSString
     let titleAttrs: [NSAttributedString.Key: Any] = [
         .font: UIFont.boldSystemFont(ofSize: 9),
         .foregroundColor: UIColor.systemOrange,

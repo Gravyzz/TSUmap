@@ -103,7 +103,7 @@ struct AStarView: View {
                     .padding(.bottom, 8)
             }
             .background(Color(.systemBackground))
-            .navigationTitle("A* — Маршрут")
+            .navigationTitle(S.aStar.aMarshrut)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { toolbarContent }
             .sheet(item: $presentedPlaceCard) { place in
@@ -160,7 +160,7 @@ struct AStarView: View {
             Image(systemName: grassWalkable ? "leaf.fill" : "leaf")
                 .foregroundColor(grassWalkable ? .green : .secondary)
                 .font(.caption)
-            Text(grassWalkable ? "По газону: можно" : "По газону: нельзя")
+            Text(grassWalkable ? S.aStar.poGazonuMozhno : S.aStar.poGazonuNelzja)
                 .font(.caption)
                 .foregroundColor(grassWalkable ? .green : .secondary)
             Spacer()
@@ -181,19 +181,19 @@ struct AStarView: View {
             } else if model.focusedPlace != nil, !model.routeToFocusedPlaceActive {
                 Image(systemName: "fork.knife.circle.fill")
                     .foregroundColor(.blue)
-                Text("Тапните в пустое место, чтобы выйти из режима заведения")
+                Text(S.aStar.tapniteVPustoeMestoChtobyVyjti)
                     .font(.caption)
                     .foregroundColor(.secondary)
             } else if editMode == .addBarrier {
                 Image(systemName: "paintbrush.pointed").foregroundColor(.orange)
-                Text("Зажми и води пальцем — рисуй/стирай барьеры")
+                Text(S.aStar.zazhmiIVodiPalcemRisujStiraj)
                     .font(.caption).foregroundColor(.orange)
             } else {
                 Image(systemName: "mappin").foregroundColor(.blue)
                 Text(
-                    model.startCell == nil ? "Тапни на карту или здание — СТАРТ" :
-                    model.endCell   == nil ? "Тапни на карту или здание — ФИНИШ" :
-                                             "Нажми «Найти путь»"
+                    model.startCell == nil ? S.aStar.tapniNaKartuIliZdanieStart :
+                    model.endCell   == nil ? S.aStar.tapniNaKartuIliZdanieFinish :
+                                             S.aStar.nazhmiNajtiPut
                 )
                 .font(.caption).foregroundColor(.secondary)
             }
@@ -210,7 +210,7 @@ struct AStarView: View {
                         .font(.caption2).foregroundColor(.secondary)
                 }
             } else if noPath {
-                Label("Путь не найден", systemImage: "xmark.circle")
+                Label(S.aStar.putNeNajden, systemImage: "xmark.circle")
                     .foregroundColor(.red).font(.caption).bold()
             } else if pathLength > 0 {
                 let timeMin = pathDistanceMeters / 83.33
@@ -261,7 +261,7 @@ struct AStarView: View {
                     showBuildingPlacesList.toggle()
                 } label: {
                     HStack {
-                        Text(showBuildingPlacesList ? "Скрыть список заведений" : "Посмотреть еще \(model.selectedBuildingPlaces.count - 1)")
+                        Text(showBuildingPlacesList ? S.aStar.skrytSpisokZavedenij : "Посмотреть еще \(model.selectedBuildingPlaces.count - 1)")
                             .font(.subheadline.weight(.semibold))
                         Spacer()
                         Image(systemName: showBuildingPlacesList ? "chevron.up" : "chevron.down")
@@ -375,7 +375,7 @@ struct AStarView: View {
                 Button {
                     confirmBinding()
                 } label: {
-                    Label("Подтвердить здание", systemImage: "checkmark.circle.fill")
+                    Label(S.aStar.podtverditZdanie, systemImage: "checkmark.circle.fill")
                         .frame(maxWidth: .infinity)
                         .frame(height: 50)
                 }
@@ -385,7 +385,7 @@ struct AStarView: View {
                 Button {
                     model.cancelBinding()
                 } label: {
-                    Label("Отмена", systemImage: "xmark")
+                    Label(S.aStar.otmena, systemImage: "xmark")
                         .frame(maxWidth: .infinity)
                         .frame(height: 50)
                 }
@@ -399,7 +399,7 @@ struct AStarView: View {
             Button {
                 model.beginRouteToFocusedPlace()
             } label: {
-                Label("Проложить маршрут", systemImage: "point.topleft.down.curvedto.point.bottomright.up")
+                Label(S.aStar.prolozhitMarshrut, systemImage: "point.topleft.down.curvedto.point.bottomright.up")
                     .frame(maxWidth: .infinity)
                     .frame(height: 50)
             }
@@ -414,7 +414,7 @@ struct AStarView: View {
                 Button {
                     runAStar()
                 } label: {
-                    Label("Найти путь", systemImage: "play.fill")
+                    Label(S.aStar.najtiPut, systemImage: "play.fill")
                         .frame(maxWidth: .infinity)
                         .frame(height: 50)
                 }
@@ -445,7 +445,7 @@ struct AStarView: View {
                         locationManager.stop()
                     }
                 } label: {
-                    Label("Моя позиция — СТАРТ", systemImage: "location.fill")
+                    Label(S.aStar.mojaPozicijaStart, systemImage: "location.fill")
                         .frame(maxWidth: .infinity)
                         .frame(height: 50)
                 }
@@ -457,14 +457,14 @@ struct AStarView: View {
     var legendBar: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 10) {
-                legendItem(.green,                          "Старт")
-                legendItem(.red,                            "Финиш")
-                legendItem(Color.black.opacity(0.55),       "Здание")
-                legendItem(Color.green.opacity(0.35),       "Газон")
-                legendItem(Color.orange.opacity(0.55),      "Барьер")
-                legendItem(Color.orange.opacity(0.45),      "Анализ")
-                legendItem(.blue.opacity(0.25),             "Просмотрено")
-                legendItem(Color(red: 0.25, green: 0.56, blue: 1.0), "Маршрут")
+                legendItem(.green,                          S.aStar.start)
+                legendItem(.red,                            S.aStar.finish)
+                legendItem(Color.black.opacity(0.55),       S.aStar.zdanie)
+                legendItem(Color.green.opacity(0.35),       S.aStar.gazon)
+                legendItem(Color.orange.opacity(0.55),      S.aStar.barer)
+                legendItem(Color.orange.opacity(0.45),      S.aStar.analiz)
+                legendItem(.blue.opacity(0.25),             S.aStar.prosmotreno)
+                legendItem(Color(red: 0.25, green: 0.56, blue: 1.0), S.aStar.marshrut)
             }
             .padding(.horizontal, 12)
         }
